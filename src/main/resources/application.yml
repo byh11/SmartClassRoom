@@ -1,0 +1,10 @@
+server:
+  port: 13000
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/smartclassroom
+    username: root
+    password: root
+
+mvc:
+  static-path-pattern: /**
