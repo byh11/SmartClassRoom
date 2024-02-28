@@ -5,11 +5,9 @@ import org.com.entity.Student;
 import org.com.execption.MyException;
 import org.com.mapper.Redis;
 import org.com.mapper.StudentMapper;
-import org.com.service.serviceImpl.StudentService;
+import org.com.service.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
 
 @Service
 public class StudentServiceImpl implements StudentService {

@@ -1,4 +1,4 @@
-package org.com.service.serviceImpl;
+package org.com.service.service;
 
 import org.com.entity.Student;
 import org.com.execption.MyException;
