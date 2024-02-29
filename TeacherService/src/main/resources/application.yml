@@ -1,5 +1,5 @@
 server:
-  port: 13000
+  port: 13001
 
 # 数据库配置
 spring:
@@ -7,11 +7,15 @@ spring:
     url: jdbc:mysql://localhost:3306/smartclassroom
     username: root
     password: root
+  application:
+    name: teacher-service
   cloud:
     nacos:
       server-addr: localhost:8848
       username: nacos
       password: nacos
-
+user-service:
+  ribbon:
+    NFLoadBalancingRuleClassName: com.alibaba.cloud.nacos.ribbon.NacosRule
 mvc:
   static-path-pattern: /**

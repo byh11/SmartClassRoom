@@ -1,0 +1,31 @@
+server:
+  port: 12000
+
+spring:
+  main:
+    web-application-type: reactive
+  datasource:
+    url: jdbc:mysql://localhost:3306/smartclassroom
+    username: root
+    password: root
+  application:
+    name: gateway
+  cloud:
+    nacos:
+      server-addr: localhost:8848
+      username: nacos
+      password: nacos
+    gateway:
+      routes:
+        - id: student-service
+          uri: lb://student-service
+          predicates:
+            - Path=/student/**
+        - id: teacher-service
+          uri: lb://teacher-service
+          predicates:
+            - Path=/teacher/**
+        - id: video-service
+          uri: lb://video-service
+          predicates:
+            - Path=/video/**
