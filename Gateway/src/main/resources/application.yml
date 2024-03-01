@@ -29,3 +29,12 @@ spring:
           uri: lb://video-service
           predicates:
             - Path=/video/**
+    globalcors:
+      add-to-simple-url-handler-mapping: true
+      corsConfigurations:
+        '*':
+          allowedOrgins: '*'
+          allowedMethods: '*'
+          allowedHeaders: '*'
+          allowCredentials: true
+          maxAge: 36000

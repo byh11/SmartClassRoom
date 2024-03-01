@@ -3,6 +3,7 @@ package com.video.contorller;
 import com.video.config.Yun;
 import com.video.entity.Video;
 import com.video.service.VideoServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.com.entity.Result;
 import org.com.execption.MyException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 @Controller
 @RequestMapping("/video")
 @RefreshScope
+@Slf4j
 public class VideoController {
 
     @Autowired
@@ -34,28 +36,44 @@ public class VideoController {
 
     @RequestMapping(value = "/UploadVideo", method = RequestMethod.POST)
     @ResponseBody
-    public Result<String> UploadVideo(MultipartFile file, String teacherid) throws MyException {
-        videoService.UploadVideo(file,teacherid);
+    public Result<String> UploadVideo(MultipartFile file, String teacherid) {
+        try {
+            videoService.UploadVideo(file,teacherid);
+        } catch (MyException e) {
+            log.info(e.getMessage());
+            return Result.error(e.getMessage());
+        }
         return Result.success("视频保存成功");
     }
 
     @RequestMapping(value = "/SelectVideo", method = RequestMethod.POST)
     @ResponseBody
-    public Result<ArrayList> SelectVideo(String videoName) throws MyException {
-        ArrayList<Video> videos = videoService.SelectVideo(videoName);
+    public Result<ArrayList> SelectVideo(String videoName) {
+        ArrayList<Video> videos = null;
+        try {
+            videos = videoService.SelectVideo(videoName);
+        } catch (MyException e) {
+            log.info(e.getMessage());
+            return Result.error(e.getMessage());
+        }
         return Result.success("查询成功",videos);
     }
 
     @RequestMapping(value = "/DeleteVideo", method = RequestMethod.POST)
     @ResponseBody
-    public Result<String> DeleteVideo(String id) throws MyException {
-        videoService.DeleteVideo(id);
+    public Result<String> DeleteVideo(String id) {
+        try {
+            videoService.DeleteVideo(id);
+        } catch (MyException e) {
+            log.info(e.getMessage());
+            return Result.error(e.getMessage());
+        }
         return Result.success("删除成功");
     }
 
     @RequestMapping(value = "/DownLoadVideo", method = RequestMethod.POST)
     @ResponseBody
-    public Result<String> DownLoadVideo(String id) throws MyException {
+    public Result<String> DownLoadVideo(String id) {
         videoService.DownLoadVideo(id);
         return Result.success("下载成功");
     }

@@ -3,6 +3,7 @@ package com.teacher.contorller;
 
 
 import com.teacher.entity.Teacher;
+import lombok.extern.slf4j.Slf4j;
 import org.com.entity.Result;
 import org.com.execption.MyException;
 import com.teacher.service.TeacherServiceImpl;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequestMapping("/teacher")
+@Slf4j
 public class TeacherController {
     @Autowired
     private TeacherServiceImpl teacherService;
@@ -27,16 +29,27 @@ public class TeacherController {
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     @ResponseBody
-    public Result<String> Register(Teacher teacher) throws MyException {
+    public Result<String> Register(Teacher teacher) {
         System.out.println(teacher.toString());
-        teacherService.Register(teacher);
+        try {
+            teacherService.Register(teacher);
+        } catch (MyException e) {
+            log.info(e.getMessage());
+            return Result.error(e.getMessage());
+        }
         return Result.success("注册成功");
     }
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ResponseBody
-    public Result<Teacher> Login(String teacherid, String password) throws MyException {
-        Teacher teacher=teacherService.Login(teacherid,password);
+    public Result<Teacher> Login(String teacherid, String password) {
+        Teacher teacher= null;
+        try {
+            teacher = teacherService.Login(teacherid,password);
+        } catch (MyException e) {
+            log.info(e.getMessage());
+            return Result.error(e.getMessage());
+        }
         return Result.success("登录成功",teacher);
     }
 

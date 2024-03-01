@@ -1,3 +1,5 @@
+package java;
+
 import com.qcloud.vod.VodUploadClient;
 import com.qcloud.vod.model.VodUploadRequest;
 import com.qcloud.vod.model.VodUploadResponse;
@@ -15,11 +17,13 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import org.bytedeco.opencv.opencv_core.Mat;
+import org.bytedeco.opencv.opencv_videoio.VideoCapture;
 
 public class test {
     @Test
     public void main() {
-//        VodUploadClient client = new VodUploadClient("AKIDeBd3Qju57fKxQ0QjyFXxHTXZVN92nPnx", "IXbT8gCe8SnMxKj2EG9sP1b8c1Wt6C7u");
+//        VodUploadClient client = new VodUploadClient("", "");
 //        VodUploadRequest request = new VodUploadRequest();
 //        request.setMediaFilePath("/opt/SmartClassRoom/11测试视频.mp4");
 //
@@ -35,7 +39,7 @@ public class test {
 //        try {
 //            // 实例化一个认证对象，入参需要传入腾讯云账户secretId，secretKey,此处还需注意密钥对的保密
 //            // 密钥可前往https://console.cloud.tencent.com/cam/capi网站进行获取
-//            Credential cred = new Credential("AKIDeBd3Qju57fKxQ0QjyFXxHTXZVN92nPnx", "IXbT8gCe8SnMxKj2EG9sP1b8c1Wt6C7u");
+//            Credential cred = new Credential("", "");
 //            // 实例化一个http选项，可选的，没有特殊需求可以跳过
 //            HttpProfile httpProfile = new HttpProfile();
 //            httpProfile.setEndpoint("vod.tencentcloudapi.com");
@@ -61,26 +65,29 @@ public class test {
 //        Redis redis = new Redis();
 //        redis.getKey("测试");
 
-        String url = "https://1324618242.vod-qcloud.com/9e20a3e3vodcq1324618242/1dbb81d31397757885846414502/cYFnSNecadUA.mp4";
-        String fileName = "/opt/SmartClassRoom/11/123.mp4";
+//        String url = "https://1324618242.vod-qcloud.com/9e20a3e3vodcq1324618242/1dbb81d31397757885846414502/cYFnSNecadUA.mp4";
+//        String fileName = "/opt/SmartClassRoom/11/123.mp4";
+//
+//        try {
+//            URL downloadUrl = new URL(url);
+//            URLConnection connection = downloadUrl.openConnection();
+//            InputStream inputStream = connection.getInputStream();
+//
+//            FileOutputStream outputStream = new FileOutputStream(fileName);
+//            byte[] buffer = new byte[1024];
+//            int bytesRead;
+//            while ((bytesRead = inputStream.read(buffer)) != -1) {
+//                outputStream.write(buffer, 0, bytesRead);
+//            }
+//
+//            outputStream.close();
+//            inputStream.close();
+//            System.out.println("File downloaded successfully.");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
-        try {
-            URL downloadUrl = new URL(url);
-            URLConnection connection = downloadUrl.openConnection();
-            InputStream inputStream = connection.getInputStream();
 
-            FileOutputStream outputStream = new FileOutputStream(fileName);
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, bytesRead);
-            }
 
-            outputStream.close();
-            inputStream.close();
-            System.out.println("File downloaded successfully.");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }
