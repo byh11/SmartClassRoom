@@ -1,6 +1,7 @@
 package com.teacher.service;
 
 
+import com.teacher.config.Yun;
 import com.teacher.entity.Teacher;
 import com.google.gson.Gson;
 import com.teacher.service.service.TeacherService;
@@ -9,6 +10,8 @@ import org.com.execption.MyException;
 import com.teacher.mapper.Redis;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class TeacherServiceImpl implements TeacherService {
@@ -21,6 +24,11 @@ public class TeacherServiceImpl implements TeacherService {
 
     @Autowired
     private Gson gson;
+
+    @Autowired
+    private Yun yun;
+
+    ConcurrentHashMap<String,Boolean> map=new ConcurrentHashMap<>();
 
     @Override
     public void Register(Teacher teacher) throws MyException {
@@ -55,12 +63,18 @@ public class TeacherServiceImpl implements TeacherService {
     }
 
     @Override
-    public void AttendClazz() {
-
+    public void AttendClazz(String teacherid) {
+        String id= yun.getId();
+        String key= yun.getKey();
+        map.put(teacherid,true);
     }
 
     @Override
-    public void FinishClazz() {
+    public void FinishClazz(String teacherid) {
 
     }
+
+
+
+
 }

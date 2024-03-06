@@ -55,15 +55,15 @@ public class TeacherController {
 
     @RequestMapping(value = "/AttendClazz",method = RequestMethod.POST)
     @ResponseBody
-    public Result<String> AttendClazz() throws MyException{
-        teacherService.AttendClazz();
+    public Result<String> AttendClazz(String teacherid) throws MyException{
+        teacherService.AttendClazz(teacherid);
         return Result.success("上课成功");
     }
 
     @RequestMapping(value = "FinishClazz", method = RequestMethod.POST)
     @ResponseBody
-    public Result<String> FinishClazz() throws MyException{
-        teacherService.FinishClazz();
+    public Result<String> FinishClazz(String teacherid) throws MyException{
+        teacherService.FinishClazz(teacherid);
         return Result.success("下课成功");
     }
 }
