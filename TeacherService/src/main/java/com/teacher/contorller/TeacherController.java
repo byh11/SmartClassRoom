@@ -55,8 +55,8 @@ public class TeacherController {
 
     @RequestMapping(value = "/AttendClazz",method = RequestMethod.POST)
     @ResponseBody
-    public Result<String> AttendClazz(String teacherid) throws MyException{
-        teacherService.AttendClazz(teacherid);
+    public Result<String> AttendClazz(String teacherid,String clazzname) throws MyException{
+        teacherService.AttendClazz(teacherid,clazzname);
         return Result.success("上课成功");
     }
 

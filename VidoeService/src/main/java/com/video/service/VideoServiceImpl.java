@@ -3,7 +3,6 @@ package com.video.service;
 import com.video.config.Yun;
 import com.video.entity.Video;
 import com.google.gson.Gson;
-
 import com.video.mapper.Redis;
 import com.video.mapper.VideoMapper;
 import com.qcloud.vod.VodUploadClient;
@@ -18,18 +17,13 @@ import com.tencentcloudapi.vod.v20180717.models.DeleteMediaRequest;
 import com.tencentcloudapi.vod.v20180717.models.DeleteMediaResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.com.execption.MyException;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import com.tencentcloudapi.common.Credential;
 import java.io.File;
-
 import java.io.IOException;
-
 import java.util.ArrayList;
 
 @Service

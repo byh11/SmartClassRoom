@@ -30,8 +30,8 @@ public class test {
 
     private Gson gson=new Gson();
 
-    String id="";
-    String key="";
+    String id="AKIDeBd3Qju57fKxQ0QjyFXxHTXZVN92nPnx";
+    String key="IXbT8gCe8SnMxKj2EG9sP1b8c1Wt6C7u";
 
     @Test
     public void aaa() {
@@ -94,6 +94,16 @@ public class test {
 
 
     @Test
+    public void d2(){
+        long a=8486178210L;
+        if(Long.valueOf("8486178210")==a){
+            System.out.println(111);
+        }else {
+            System.out.println(222);
+        }
+    }
+
+    @Test
     public void ccc(){
         try{
             // 实例化一个认证对象，入参需要传入腾讯云账户 SecretId 和 SecretKey，此处还需注意密钥对的保密
@@ -110,9 +120,9 @@ public class test {
             AsrClient client = new AsrClient(cred, "", clientProfile);
             // 实例化一个请求对象,每个接口都会对应一个request对象
             DescribeTaskStatusRequest req = new DescribeTaskStatusRequest();
-            long a = 8469104580L;
+            long a = 8486086944L;
             System.out.println(a);
-            req.setTaskId(a);
+            req.setTaskId(Long.valueOf("8486178210"));
             // 返回的resp是一个DescribeTaskStatusResponse的实例，与请求对象对应
             DescribeTaskStatusResponse resp = client.DescribeTaskStatus(req);
             // 输出json格式的字符串回包
@@ -227,7 +237,6 @@ public class test {
             VodUploadResponse response = client.upload("ap-guangzhou", request);
             System.out.println(response.getFileId());
             System.out.println(response.getMediaUrl());
-            videoid = response.getFileId();
             videourl=response.getMediaUrl();
         } catch (Exception e) {
             // 业务方进行异常处理
