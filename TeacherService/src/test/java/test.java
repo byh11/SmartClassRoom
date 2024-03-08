@@ -30,8 +30,8 @@ public class test {
 
     private Gson gson=new Gson();
 
-    String id="AKIDeBd3Qju57fKxQ0QjyFXxHTXZVN92nPnx";
-    String key="IXbT8gCe8SnMxKj2EG9sP1b8c1Wt6C7u";
+    String id="";
+    String key="";
 
     @Test
     public void aaa() {
