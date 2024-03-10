@@ -15,4 +15,6 @@ public interface VideoService {
     void DeleteVideo(String id) throws MyException;
 
     void DownLoadVideo(String id);
+
+    void SaveVideo(Video video);
 }

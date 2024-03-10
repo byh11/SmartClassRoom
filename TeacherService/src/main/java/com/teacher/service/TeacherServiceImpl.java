@@ -4,9 +4,11 @@ package com.teacher.service;
 import com.qcloud.vod.VodUploadClient;
 import com.qcloud.vod.model.VodUploadRequest;
 import com.qcloud.vod.model.VodUploadResponse;
+import com.teacher.client.VideoClient;
 import com.teacher.config.Yun;
 import com.teacher.entity.Teacher;
 import com.google.gson.Gson;
+import com.teacher.entity.Video;
 import com.teacher.service.service.TeacherService;
 import com.teacher.mapper.TeacherMapper;
 import com.tencentcloudapi.asr.v20190614.AsrClient;
@@ -46,6 +48,9 @@ public class TeacherServiceImpl implements TeacherService {
 
     @Autowired
     private Yun yun;
+
+    @Autowired
+    private VideoClient videoClient;
 
     private ConcurrentHashMap<String, Boolean> map = new ConcurrentHashMap<>();
 
@@ -108,7 +113,12 @@ public class TeacherServiceImpl implements TeacherService {
                 File file2 = new File("/opt/SmartClassRoom/11/" + clazzname + ".mp4");
                 file2.delete();
                 //远程调用保存Video信息
-
+                Video video1 = new Video();
+                video1.setId(Long.parseLong(video.get(0)));
+                video1.setUrl(teacherid);
+                video1.setUrl(video.get(1));
+                video1.setVideoname(clazzname);
+                videoClient.SaveVideo(video1);
             } catch (MyException e) {
                 log.error(e.getMessage());
                 throw new RuntimeException(e);

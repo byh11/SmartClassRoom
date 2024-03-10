@@ -2,7 +2,9 @@ package com.teacher.contorller;
 
 
 
+import com.teacher.client.VideoClient;
 import com.teacher.entity.Teacher;
+import com.teacher.entity.Video;
 import lombok.extern.slf4j.Slf4j;
 import org.com.entity.Result;
 import org.com.execption.MyException;
@@ -20,10 +22,19 @@ public class TeacherController {
     @Autowired
     private TeacherServiceImpl teacherService;
 
+    @Autowired
+    private VideoClient videoClient;
+
     @RequestMapping(value = "/test", method = RequestMethod.GET)
     @ResponseBody
     public Result<String> test() {
         System.out.println("22222222222222222222");
+        Video video = new Video();
+        video.setTeacherid("1");
+        video.setUrl("1");
+        video.setVideoname("1");
+        video.setId(1L);
+        videoClient.SaveVideo(video);
         return Result.success("测试成功");
     }
 

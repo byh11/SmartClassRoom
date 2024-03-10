@@ -4,12 +4,14 @@ import com.video.config.Yun;
 import com.video.entity.Video;
 import com.video.service.VideoServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Param;
 import org.com.entity.Result;
 import org.com.execption.MyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -33,6 +35,13 @@ public class VideoController {
         return Result.success("测试成功");
     }
 
+    @RequestMapping(value = "/SaveVideo")
+    @ResponseBody
+    public Result<String> SaveVideo(@RequestBody Video video) {
+        videoService.SaveVideo(video);
+//        System.out.println(video.toString());
+        return Result.success("视频保存成功");
+    }
 
     @RequestMapping(value = "/UploadVideo", method = RequestMethod.POST)
     @ResponseBody

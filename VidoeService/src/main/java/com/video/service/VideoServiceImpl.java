@@ -120,4 +120,10 @@ public class VideoServiceImpl implements VideoService {
 
 
     }
+
+    @Override
+    public void SaveVideo(Video video) {
+        videoMapper.insert(video.getId(), video.getTeacherid(), video.getUrl(), video.getVideoname());
+        redis.registerSet(String.valueOf(video.getId()), gson.toJson(video));
+    }
 }
