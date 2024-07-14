@@ -25,6 +25,7 @@ import com.tencentcloudapi.common.Credential;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RefreshScope
@@ -42,6 +43,8 @@ public class VideoServiceImpl implements VideoService {
 
     @Autowired
     private Yun yun;
+
+    private ConcurrentHashMap<String,Process> processMap=new ConcurrentHashMap<>();
 
     @Override
     public void UploadVideo(MultipartFile file, String teacherid) throws MyException {
@@ -126,4 +129,34 @@ public class VideoServiceImpl implements VideoService {
         videoMapper.insert(video.getId(), video.getTeacherid(), video.getUrl(), video.getVideoname());
         redis.registerSet(String.valueOf(video.getId()), gson.toJson(video));
     }
+
+    @Override
+    public void Live(String teacherid) throws MyException{
+        Process process = null;
+        String ffmpeg = "ffmpeg -f v4l2 -input_format yuyv422 -video_size 640x480 -framerate 30 -i /dev/video0 -f alsa -i default -c:v libx264 -preset ultrafast -tune zerolatency -c:a aac -f flv rtmp://127.0.0.1:1935/hls/"+teacherid;
+        ProcessBuilder pb = new ProcessBuilder("bash", "-c", ffmpeg);
+        try {
+            process = pb.start();
+            if(processMap.containsKey(teacherid)){
+                throw new MyException("您已经开始直播，请勿重复点击");
+            }
+            processMap.put(teacherid,process);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (MyException e) {
+            throw e;
+        }
+    }
+
+    @Override
+    public void StopLive(String teacherid) throws MyException {
+        if(processMap.containsKey(teacherid)){
+            processMap.get(teacherid).destroy();
+            processMap.remove(teacherid);
+        }else {
+            throw new MyException("您已结束直播或直播未开启无法关闭直播");
+        }
+    }
+
+
 }

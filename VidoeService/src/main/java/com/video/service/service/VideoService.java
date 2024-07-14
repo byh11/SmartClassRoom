@@ -17,4 +17,8 @@ public interface VideoService {
     void DownLoadVideo(String id);
 
     void SaveVideo(Video video);
+
+    void Live(String teacherid) throws MyException;
+
+    void StopLive(String teacherid) throws MyException;
 }

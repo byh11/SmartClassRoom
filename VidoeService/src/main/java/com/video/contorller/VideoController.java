@@ -28,14 +28,16 @@ public class VideoController {
     @Autowired
     private VideoServiceImpl videoService;
 
+    private int test=0;
+
     @RequestMapping(value = "/test", method = RequestMethod.GET)
     @ResponseBody
     public Result<String> test() {
         System.out.println("333333333333333333333");
-        return Result.success("测试成功");
+        return Result.success("测试成功"+test++);
     }
 
-    @RequestMapping(value = "/SaveVideo")
+    @RequestMapping(value = "/SaveVideo", method = RequestMethod.POST)
     @ResponseBody
     public Result<String> SaveVideo(@RequestBody Video video) {
         videoService.SaveVideo(video);
@@ -85,5 +87,27 @@ public class VideoController {
     public Result<String> DownLoadVideo(String id) {
         videoService.DownLoadVideo(id);
         return Result.success("下载成功");
+    }
+
+    @RequestMapping(value = "/live", method = RequestMethod.POST)
+    @ResponseBody
+    public Result<String> Live(String teacherid) {
+        try {
+            videoService.Live(teacherid);
+        } catch (MyException e) {
+            return Result.error(e.getMessage());
+        }
+        return Result.success("开始直播");
+    }
+
+    @RequestMapping(value = "/stoplive", method = RequestMethod.POST)
+    @ResponseBody
+    public Result<String> stoplive(String teacherid) {
+        try {
+            videoService.StopLive(teacherid);
+        } catch (MyException e) {
+            return Result.error(e.getMessage());
+        }
+        return Result.success("停止直播");
     }
 }
