@@ -2,6 +2,7 @@ package com.video.mapper;
 
 import com.video.entity.Video;
 import org.apache.ibatis.annotations.*;
+import org.apache.ibatis.session.RowBounds;
 
 
 import java.util.ArrayList;
@@ -15,6 +16,9 @@ public interface VideoMapper {
 
     @Select("select * from video where videoname like '%${videoname}%'")
     ArrayList<Video> SelectVideo(@Param("videoname")String videoname);
+
+    @Select("select * from video")
+    ArrayList<Video> SelectVideoAll(RowBounds rowBounds);
 
     @Delete("delete from video where id=#{id}")
     void DeleteVideo(String id);

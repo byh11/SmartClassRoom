@@ -16,6 +16,7 @@ import com.tencentcloudapi.vod.v20180717.VodClient;
 import com.tencentcloudapi.vod.v20180717.models.DeleteMediaRequest;
 import com.tencentcloudapi.vod.v20180717.models.DeleteMediaResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.session.RowBounds;
 import org.com.execption.MyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -25,6 +26,7 @@ import com.tencentcloudapi.common.Credential;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -86,6 +88,18 @@ public class VideoServiceImpl implements VideoService {
         videos = videoMapper.SelectVideo(videoName);
         if (videos!=null){
             redis.registerSet(videoName,gson.toJson(videos));
+            return videos;
+        }
+        throw new MyException("查询失败");
+    }
+
+    @Override
+    public ArrayList<Video> SelectVideoPage(int pageSize, int pageNumber) throws MyException {
+
+        ArrayList<Video> videos;
+        RowBounds rowBounds = new RowBounds((pageNumber - 1) * pageSize, pageSize);
+        videos = videoMapper.SelectVideoAll(rowBounds);
+        if (videos!=null){
             return videos;
         }
         throw new MyException("查询失败");

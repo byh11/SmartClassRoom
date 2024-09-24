@@ -57,6 +57,19 @@ public class VideoController {
         return Result.success("视频保存成功");
     }
 
+    @RequestMapping(value = "/SelectVideoAll", method = RequestMethod.POST)
+    @ResponseBody
+    public Result<ArrayList> SelectVideoAll(int pageSize,int pageNumber) {
+        ArrayList<Video> videos = null;
+        try {
+            videos = videoService.SelectVideoPage(pageSize,pageNumber);
+        } catch (MyException e) {
+            log.info(e.getMessage());
+            return Result.error(e.getMessage());
+        }
+        return Result.success("查询成功",videos);
+    }
+
     @RequestMapping(value = "/SelectVideo", method = RequestMethod.POST)
     @ResponseBody
     public Result<ArrayList> SelectVideo(String videoName) {

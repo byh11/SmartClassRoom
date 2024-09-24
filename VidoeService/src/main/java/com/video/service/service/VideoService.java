@@ -12,6 +12,8 @@ public interface VideoService {
 
     ArrayList<Video> SelectVideo(String videoName) throws MyException;
 
+    ArrayList<Video> SelectVideoPage(int pageSize,int pageNumber) throws MyException;
+
     void DeleteVideo(String id) throws MyException;
 
     void DownLoadVideo(String id);
