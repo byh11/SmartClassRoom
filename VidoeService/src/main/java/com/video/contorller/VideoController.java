@@ -36,7 +36,7 @@ public class VideoController {
 
     @RequestMapping(value = "/SaveVideo", method = RequestMethod.POST)
     @ResponseBody
-    public Result<String> SaveVideo(@RequestBody Video video) {
+    public Result<String> saveVideo(@RequestBody Video video) {
         videoService.saveVideo(video);
 //        System.out.println(video.toString());
         return Result.success("视频保存成功");
@@ -44,7 +44,7 @@ public class VideoController {
 
     @RequestMapping(value = "/UploadVideo", method = RequestMethod.POST)
     @ResponseBody
-    public Result<String> UploadVideo(MultipartFile file, String teacherid) {
+    public Result<String> uploadVideo(MultipartFile file, String teacherid) {
         try {
             videoService.uploadVideo(file, teacherid);
         } catch (MyException e) {
@@ -56,7 +56,7 @@ public class VideoController {
 
     @RequestMapping(value = "/SelectVideoAll", method = RequestMethod.POST)
     @ResponseBody
-    public Result<ArrayList> SelectVideoAll(int pageSize, int pageNumber) {
+    public Result<ArrayList> selectVideoAll(int pageSize, int pageNumber) {
         ArrayList<Video> videos = null;
         try {
             videos = videoService.selectVideoPage(pageSize, pageNumber);
@@ -69,7 +69,7 @@ public class VideoController {
 
     @RequestMapping(value = "/SelectVideo", method = RequestMethod.POST)
     @ResponseBody
-    public Result<ArrayList> SelectVideo(String videoName) {
+    public Result<ArrayList> selectVideo(String videoName) {
         ArrayList<Video> videos = null;
         try {
             videos = videoService.selectVideo(videoName);
@@ -82,7 +82,7 @@ public class VideoController {
 
     @RequestMapping(value = "/DeleteVideo", method = RequestMethod.POST)
     @ResponseBody
-    public Result<String> DeleteVideo(String id) {
+    public Result<String> deleteVideo(String id) {
         try {
             videoService.deleteVideo(id);
         } catch (MyException e) {
@@ -94,14 +94,14 @@ public class VideoController {
 
     @RequestMapping(value = "/DownLoadVideo", method = RequestMethod.POST)
     @ResponseBody
-    public Result<String> DownLoadVideo(String id) {
+    public Result<String> downLoadVideo(String id) {
         videoService.downLoadVideo(id);
         return Result.success("下载成功");
     }
 
     @RequestMapping(value = "/live", method = RequestMethod.POST)
     @ResponseBody
-    public Result<String> Live(String teacherid) {
+    public Result<String> live(String teacherid) {
         try {
             videoService.live(teacherid);
         } catch (MyException e) {

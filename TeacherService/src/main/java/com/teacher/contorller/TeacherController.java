@@ -39,7 +39,7 @@ public class TeacherController {
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     @ResponseBody
-    public Result<String> Register(Teacher teacher) {
+    public Result<String> register(Teacher teacher) {
         System.out.println(teacher.toString());
         try {
             teacherService.register(teacher);
@@ -52,7 +52,7 @@ public class TeacherController {
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ResponseBody
-    public Result<Teacher> Login(String teacherid, String password) {
+    public Result<Teacher> login(String teacherid, String password) {
         Teacher teacher = null;
         try {
             teacher = teacherService.login(teacherid, password);
@@ -65,14 +65,14 @@ public class TeacherController {
 
     @RequestMapping(value = "/AttendClazz", method = RequestMethod.POST)
     @ResponseBody
-    public Result<String> AttendClazz(String teacherid, String clazzname) throws MyException {
+    public Result<String> attendClazz(String teacherid, String clazzname) throws MyException {
         teacherService.attendClazz(teacherid, clazzname);
         return Result.success("上课成功");
     }
 
     @RequestMapping(value = "FinishClazz", method = RequestMethod.POST)
     @ResponseBody
-    public Result<String> FinishClazz(String teacherid) throws MyException {
+    public Result<String> finishClazz(String teacherid) throws MyException {
         teacherService.finishClazz(teacherid);
         return Result.success("下课成功");
     }

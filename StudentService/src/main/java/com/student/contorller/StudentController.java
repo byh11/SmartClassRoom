@@ -28,7 +28,7 @@ public class StudentController {
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     @ResponseBody
-    public Result<String> Register(Student student) {
+    public Result<String> register(Student student) {
         System.out.println(student.toString());
         try {
             studentService.register(student);
@@ -41,7 +41,7 @@ public class StudentController {
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ResponseBody
-    public Result<Student> Login(String studentid, String password) {
+    public Result<Student> login(String studentid, String password) {
         Student student = null;
         try {
             student = studentService.login(studentid, password);
