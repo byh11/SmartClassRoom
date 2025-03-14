@@ -1,8 +1,9 @@
 package com.teacher.mapper;
 
 import com.teacher.entity.Teacher;
-import org.apache.ibatis.annotations.*;
-
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.Date;
 

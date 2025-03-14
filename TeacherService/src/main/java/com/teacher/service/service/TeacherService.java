@@ -9,7 +9,7 @@ public interface TeacherService {
 
     Teacher Login(String teacherid, String password) throws MyException;
 
-    void AttendClazz(String teacherid,String clazzname);
+    void AttendClazz(String teacherid, String clazzname);
 
     void FinishClazz(String teacherid);
 }

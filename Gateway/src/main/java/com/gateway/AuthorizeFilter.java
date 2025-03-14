@@ -5,10 +5,10 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
-import org.springframework.http.server.reactive.ServerHttpRequest;
 import reactor.core.publisher.Mono;
 
 
@@ -21,14 +21,14 @@ public class AuthorizeFilter implements GlobalFilter {
         ServerHttpRequest request = exchange.getRequest();
         MultiValueMap<String, String> queryParams = request.getQueryParams();
         String[] paths = request.getURI().getPath().split("/");
-        if(paths[1].equals("student")){
-            if(queryParams.get("studentid").toString().length() < 8 || queryParams.get("password").toString().length() < 8){
+        if (paths[1].equals("student")) {
+            if (queryParams.get("studentid").toString().length() < 8 || queryParams.get("password").toString().length() < 8) {
                 log.info("参数错误");
                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                 return exchange.getResponse().setComplete();
             }
-        }else if(paths[1].equals("teacher")){
-            if(queryParams.get("teacherid").toString().length() < 8 || queryParams.get("password").toString().length() < 8){
+        } else if (paths[1].equals("teacher")) {
+            if (queryParams.get("teacherid").toString().length() < 8 || queryParams.get("password").toString().length() < 8) {
                 log.info("参数错误");
                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                 return exchange.getResponse().setComplete();

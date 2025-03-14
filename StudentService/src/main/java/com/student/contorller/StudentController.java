@@ -28,7 +28,7 @@ public class StudentController {
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     @ResponseBody
-    public Result<String> Register(Student student)  {
+    public Result<String> Register(Student student) {
         System.out.println(student.toString());
         try {
             studentService.Register(student);
@@ -42,13 +42,13 @@ public class StudentController {
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ResponseBody
     public Result<Student> Login(String studentid, String password) {
-        Student student= null;
+        Student student = null;
         try {
-            student = studentService.Login(studentid,password);
+            student = studentService.Login(studentid, password);
         } catch (MyException e) {
             log.info(e.getMessage());
             return Result.error(e.getMessage());
         }
-        return Result.success("登录成功",student);
+        return Result.success("登录成功", student);
     }
 }

@@ -1,20 +1,21 @@
 package com.video.service;
 
-import com.video.config.Yun;
-import com.video.entity.Video;
 import com.google.gson.Gson;
-import com.video.mapper.Redis;
-import com.video.mapper.VideoMapper;
 import com.qcloud.vod.VodUploadClient;
 import com.qcloud.vod.model.VodUploadRequest;
 import com.qcloud.vod.model.VodUploadResponse;
-import com.video.service.service.VideoService;
+import com.tencentcloudapi.common.Credential;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import com.tencentcloudapi.common.profile.ClientProfile;
 import com.tencentcloudapi.common.profile.HttpProfile;
 import com.tencentcloudapi.vod.v20180717.VodClient;
 import com.tencentcloudapi.vod.v20180717.models.DeleteMediaRequest;
 import com.tencentcloudapi.vod.v20180717.models.DeleteMediaResponse;
+import com.video.config.Yun;
+import com.video.entity.Video;
+import com.video.mapper.Redis;
+import com.video.mapper.VideoMapper;
+import com.video.service.service.VideoService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.RowBounds;
 import org.com.execption.MyException;
@@ -22,11 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import com.tencentcloudapi.common.Credential;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -46,18 +46,18 @@ public class VideoServiceImpl implements VideoService {
     @Autowired
     private Yun yun;
 
-    private ConcurrentHashMap<String,Process> processMap=new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Process> processMap = new ConcurrentHashMap<>();
 
     @Override
     public void UploadVideo(MultipartFile file, String teacherid) throws MyException {
         VodUploadClient client = new VodUploadClient(yun.getId(), yun.getKey());
         VodUploadRequest request = new VodUploadRequest();
         try {
-            file.transferTo(new java.io.File("/opt/SmartClassRoom/11/"+file.getOriginalFilename()));
+            file.transferTo(new java.io.File("/opt/SmartClassRoom/11/" + file.getOriginalFilename()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        request.setMediaFilePath("/opt/SmartClassRoom/11/"+file.getOriginalFilename());
+        request.setMediaFilePath("/opt/SmartClassRoom/11/" + file.getOriginalFilename());
         Video video = new Video();
         try {
             VodUploadResponse response = client.upload("ap-guangzhou", request);
@@ -74,20 +74,20 @@ public class VideoServiceImpl implements VideoService {
         }
         videoMapper.insert(video.getId(), video.getTeacherid(), video.getUrl(), video.getVideoname());
         redis.registerSet(String.valueOf(video.getId()), gson.toJson(video));
-        File file1 = new File("/opt/SmartClassRoom/11/"+file.getOriginalFilename());
+        File file1 = new File("/opt/SmartClassRoom/11/" + file.getOriginalFilename());
         file1.delete();
     }
 
     @Override
     public ArrayList<Video> SelectVideo(String videoName) throws MyException {
         ArrayList<Video> videos;
-        if (redis.isExist(videoName)){
+        if (redis.isExist(videoName)) {
             videos = (ArrayList<Video>) gson.fromJson(redis.getKey(videoName), ArrayList.class);
             return videos;
         }
         videos = videoMapper.SelectVideo(videoName);
-        if (videos!=null){
-            redis.registerSet(videoName,gson.toJson(videos));
+        if (videos != null) {
+            redis.registerSet(videoName, gson.toJson(videos));
             return videos;
         }
         throw new MyException("查询失败");
@@ -99,7 +99,7 @@ public class VideoServiceImpl implements VideoService {
         ArrayList<Video> videos;
         RowBounds rowBounds = new RowBounds((pageNumber - 1) * pageSize, pageSize);
         videos = videoMapper.SelectVideoAll(rowBounds);
-        if (videos!=null){
+        if (videos != null) {
             return videos;
         }
         throw new MyException("查询失败");
@@ -145,16 +145,16 @@ public class VideoServiceImpl implements VideoService {
     }
 
     @Override
-    public void Live(String teacherid) throws MyException{
+    public void Live(String teacherid) throws MyException {
         Process process = null;
-        String ffmpeg = "ffmpeg -f v4l2 -input_format yuyv422 -video_size 640x480 -framerate 30 -i /dev/video0 -f alsa -i default -c:v libx264 -preset ultrafast -tune zerolatency -c:a aac -f flv rtmp://127.0.0.1:1935/hls/"+teacherid;
+        String ffmpeg = "ffmpeg -f v4l2 -input_format yuyv422 -video_size 640x480 -framerate 30 -i /dev/video0 -f alsa -i default -c:v libx264 -preset ultrafast -tune zerolatency -c:a aac -f flv rtmp://127.0.0.1:1935/hls/" + teacherid;
         ProcessBuilder pb = new ProcessBuilder("bash", "-c", ffmpeg);
         try {
             process = pb.start();
-            if(processMap.containsKey(teacherid)){
+            if (processMap.containsKey(teacherid)) {
                 throw new MyException("您已经开始直播，请勿重复点击");
             }
-            processMap.put(teacherid,process);
+            processMap.put(teacherid, process);
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (MyException e) {
@@ -164,10 +164,10 @@ public class VideoServiceImpl implements VideoService {
 
     @Override
     public void StopLive(String teacherid) throws MyException {
-        if(processMap.containsKey(teacherid)){
+        if (processMap.containsKey(teacherid)) {
             processMap.get(teacherid).destroy();
             processMap.remove(teacherid);
-        }else {
+        } else {
             throw new MyException("您已结束直播或直播未开启无法关闭直播");
         }
     }

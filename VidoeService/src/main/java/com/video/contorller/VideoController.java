@@ -1,14 +1,11 @@
 package com.video.contorller;
 
-import com.video.config.Yun;
 import com.video.entity.Video;
 import com.video.service.VideoServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.annotations.Param;
 import org.com.entity.Result;
 import org.com.execption.MyException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,13 +25,13 @@ public class VideoController {
     @Autowired
     private VideoServiceImpl videoService;
 
-    private int test=0;
+    private int test = 0;
 
     @RequestMapping(value = "/test", method = RequestMethod.GET)
     @ResponseBody
     public Result<String> test() {
         System.out.println("333333333333333333333");
-        return Result.success("测试成功"+test++);
+        return Result.success("测试成功" + test++);
     }
 
     @RequestMapping(value = "/SaveVideo", method = RequestMethod.POST)
@@ -49,7 +46,7 @@ public class VideoController {
     @ResponseBody
     public Result<String> UploadVideo(MultipartFile file, String teacherid) {
         try {
-            videoService.UploadVideo(file,teacherid);
+            videoService.UploadVideo(file, teacherid);
         } catch (MyException e) {
             log.info(e.getMessage());
             return Result.error(e.getMessage());
@@ -59,15 +56,15 @@ public class VideoController {
 
     @RequestMapping(value = "/SelectVideoAll", method = RequestMethod.POST)
     @ResponseBody
-    public Result<ArrayList> SelectVideoAll(int pageSize,int pageNumber) {
+    public Result<ArrayList> SelectVideoAll(int pageSize, int pageNumber) {
         ArrayList<Video> videos = null;
         try {
-            videos = videoService.SelectVideoPage(pageSize,pageNumber);
+            videos = videoService.SelectVideoPage(pageSize, pageNumber);
         } catch (MyException e) {
             log.info(e.getMessage());
             return Result.error(e.getMessage());
         }
-        return Result.success("查询成功",videos);
+        return Result.success("查询成功", videos);
     }
 
     @RequestMapping(value = "/SelectVideo", method = RequestMethod.POST)
@@ -80,7 +77,7 @@ public class VideoController {
             log.info(e.getMessage());
             return Result.error(e.getMessage());
         }
-        return Result.success("查询成功",videos);
+        return Result.success("查询成功", videos);
     }
 
     @RequestMapping(value = "/DeleteVideo", method = RequestMethod.POST)

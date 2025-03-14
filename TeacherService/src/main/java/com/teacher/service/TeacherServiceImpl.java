@@ -1,16 +1,17 @@
 package com.teacher.service;
 
 
+import com.google.gson.Gson;
 import com.qcloud.vod.VodUploadClient;
 import com.qcloud.vod.model.VodUploadRequest;
 import com.qcloud.vod.model.VodUploadResponse;
 import com.teacher.client.VideoClient;
 import com.teacher.config.Yun;
 import com.teacher.entity.Teacher;
-import com.google.gson.Gson;
 import com.teacher.entity.Video;
-import com.teacher.service.service.TeacherService;
+import com.teacher.mapper.Redis;
 import com.teacher.mapper.TeacherMapper;
+import com.teacher.service.service.TeacherService;
 import com.tencentcloudapi.asr.v20190614.AsrClient;
 import com.tencentcloudapi.asr.v20190614.models.CreateRecTaskRequest;
 import com.tencentcloudapi.asr.v20190614.models.CreateRecTaskResponse;
@@ -25,7 +26,6 @@ import com.tencentcloudapi.vod.v20180717.models.DeleteMediaRequest;
 import com.tencentcloudapi.vod.v20180717.models.DeleteMediaResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.com.execption.MyException;
-import com.teacher.mapper.Redis;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

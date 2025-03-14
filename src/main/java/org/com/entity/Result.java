@@ -13,25 +13,26 @@ public class Result<T> {
     private T data;         //响应数据
 
     public static <E> Result<E> success(E data) {
-        return new Result<>(200,"操作成功",data);
+        return new Result<>(200, "操作成功", data);
     }
 
-    public static <E> Result<E> success(String message,E data) {
-        return new Result<>(200,message,data);
+    public static <E> Result<E> success(String message, E data) {
+        return new Result<>(200, message, data);
     }
 
     public static Result success(String message) {
-        return new Result(200,message,null);
+        return new Result(200, message, null);
     }
+
     public static Result success() {
-        return new Result(200,"操作成功",null);
+        return new Result(200, "操作成功", null);
     }
 
     public static Result error(String message) {
-        return new Result<>(100,message,null);
+        return new Result<>(100, message, null);
     }
 
     public static Result error() {
-        return new Result<>(100,"操作失败",null);
+        return new Result<>(100, "操作失败", null);
     }
 }

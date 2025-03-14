@@ -1,14 +1,13 @@
 package com.teacher.contorller;
 
 
-
 import com.teacher.client.VideoClient;
 import com.teacher.entity.Teacher;
 import com.teacher.entity.Video;
+import com.teacher.service.TeacherServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.com.entity.Result;
 import org.com.execption.MyException;
-import com.teacher.service.TeacherServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -54,26 +53,26 @@ public class TeacherController {
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ResponseBody
     public Result<Teacher> Login(String teacherid, String password) {
-        Teacher teacher= null;
+        Teacher teacher = null;
         try {
-            teacher = teacherService.Login(teacherid,password);
+            teacher = teacherService.Login(teacherid, password);
         } catch (MyException e) {
             log.info(e.getMessage());
             return Result.error(e.getMessage());
         }
-        return Result.success("登录成功",teacher);
+        return Result.success("登录成功", teacher);
     }
 
-    @RequestMapping(value = "/AttendClazz",method = RequestMethod.POST)
+    @RequestMapping(value = "/AttendClazz", method = RequestMethod.POST)
     @ResponseBody
-    public Result<String> AttendClazz(String teacherid,String clazzname) throws MyException{
-        teacherService.AttendClazz(teacherid,clazzname);
+    public Result<String> AttendClazz(String teacherid, String clazzname) throws MyException {
+        teacherService.AttendClazz(teacherid, clazzname);
         return Result.success("上课成功");
     }
 
     @RequestMapping(value = "FinishClazz", method = RequestMethod.POST)
     @ResponseBody
-    public Result<String> FinishClazz(String teacherid) throws MyException{
+    public Result<String> FinishClazz(String teacherid) throws MyException {
         teacherService.FinishClazz(teacherid);
         return Result.success("下课成功");
     }

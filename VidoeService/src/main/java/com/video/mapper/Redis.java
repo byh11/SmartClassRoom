@@ -24,6 +24,7 @@ public class Redis {
         redisTemplate.expire(key, 60, TimeUnit.MINUTES);
 
     }
+
     public String getKey(String username) {
         if (redisTemplate.hasKey(username)) {
             return redisTemplate.opsForValue().get(username).toString();
