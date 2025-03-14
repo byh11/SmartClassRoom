@@ -31,7 +31,7 @@ public class StudentController {
     public Result<String> Register(Student student) {
         System.out.println(student.toString());
         try {
-            studentService.Register(student);
+            studentService.register(student);
         } catch (MyException e) {
             log.info(e.getMessage());
             return Result.error(e.getMessage());
@@ -44,7 +44,7 @@ public class StudentController {
     public Result<Student> Login(String studentid, String password) {
         Student student = null;
         try {
-            student = studentService.Login(studentid, password);
+            student = studentService.login(studentid, password);
         } catch (MyException e) {
             log.info(e.getMessage());
             return Result.error(e.getMessage());

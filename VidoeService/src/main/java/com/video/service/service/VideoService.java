@@ -8,19 +8,19 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 
 public interface VideoService {
-    void UploadVideo(MultipartFile file, String teacherid) throws MyException;
+    void uploadVideo(MultipartFile file, String teacherid) throws MyException;
 
-    ArrayList<Video> SelectVideo(String videoName) throws MyException;
+    ArrayList<Video> selectVideo(String videoName) throws MyException;
 
-    ArrayList<Video> SelectVideoPage(int pageSize, int pageNumber) throws MyException;
+    ArrayList<Video> selectVideoPage(int pageSize, int pageNumber) throws MyException;
 
-    void DeleteVideo(String id) throws MyException;
+    void deleteVideo(String id) throws MyException;
 
-    void DownLoadVideo(String id);
+    void downLoadVideo(String id);
 
-    void SaveVideo(Video video);
+    void saveVideo(Video video);
 
-    void Live(String teacherid) throws MyException;
+    void live(String teacherid) throws MyException;
 
-    void StopLive(String teacherid) throws MyException;
+    void stopLive(String teacherid) throws MyException;
 }

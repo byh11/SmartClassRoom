@@ -37,7 +37,7 @@ public class VideoController {
     @RequestMapping(value = "/SaveVideo", method = RequestMethod.POST)
     @ResponseBody
     public Result<String> SaveVideo(@RequestBody Video video) {
-        videoService.SaveVideo(video);
+        videoService.saveVideo(video);
 //        System.out.println(video.toString());
         return Result.success("视频保存成功");
     }
@@ -46,7 +46,7 @@ public class VideoController {
     @ResponseBody
     public Result<String> UploadVideo(MultipartFile file, String teacherid) {
         try {
-            videoService.UploadVideo(file, teacherid);
+            videoService.uploadVideo(file, teacherid);
         } catch (MyException e) {
             log.info(e.getMessage());
             return Result.error(e.getMessage());
@@ -59,7 +59,7 @@ public class VideoController {
     public Result<ArrayList> SelectVideoAll(int pageSize, int pageNumber) {
         ArrayList<Video> videos = null;
         try {
-            videos = videoService.SelectVideoPage(pageSize, pageNumber);
+            videos = videoService.selectVideoPage(pageSize, pageNumber);
         } catch (MyException e) {
             log.info(e.getMessage());
             return Result.error(e.getMessage());
@@ -72,7 +72,7 @@ public class VideoController {
     public Result<ArrayList> SelectVideo(String videoName) {
         ArrayList<Video> videos = null;
         try {
-            videos = videoService.SelectVideo(videoName);
+            videos = videoService.selectVideo(videoName);
         } catch (MyException e) {
             log.info(e.getMessage());
             return Result.error(e.getMessage());
@@ -84,7 +84,7 @@ public class VideoController {
     @ResponseBody
     public Result<String> DeleteVideo(String id) {
         try {
-            videoService.DeleteVideo(id);
+            videoService.deleteVideo(id);
         } catch (MyException e) {
             log.info(e.getMessage());
             return Result.error(e.getMessage());
@@ -95,7 +95,7 @@ public class VideoController {
     @RequestMapping(value = "/DownLoadVideo", method = RequestMethod.POST)
     @ResponseBody
     public Result<String> DownLoadVideo(String id) {
-        videoService.DownLoadVideo(id);
+        videoService.downLoadVideo(id);
         return Result.success("下载成功");
     }
 
@@ -103,7 +103,7 @@ public class VideoController {
     @ResponseBody
     public Result<String> Live(String teacherid) {
         try {
-            videoService.Live(teacherid);
+            videoService.live(teacherid);
         } catch (MyException e) {
             return Result.error(e.getMessage());
         }
@@ -114,7 +114,7 @@ public class VideoController {
     @ResponseBody
     public Result<String> stoplive(String teacherid) {
         try {
-            videoService.StopLive(teacherid);
+            videoService.stopLive(teacherid);
         } catch (MyException e) {
             return Result.error(e.getMessage());
         }

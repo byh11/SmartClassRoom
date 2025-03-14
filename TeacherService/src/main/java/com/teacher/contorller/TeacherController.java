@@ -42,7 +42,7 @@ public class TeacherController {
     public Result<String> Register(Teacher teacher) {
         System.out.println(teacher.toString());
         try {
-            teacherService.Register(teacher);
+            teacherService.register(teacher);
         } catch (MyException e) {
             log.info(e.getMessage());
             return Result.error(e.getMessage());
@@ -55,7 +55,7 @@ public class TeacherController {
     public Result<Teacher> Login(String teacherid, String password) {
         Teacher teacher = null;
         try {
-            teacher = teacherService.Login(teacherid, password);
+            teacher = teacherService.login(teacherid, password);
         } catch (MyException e) {
             log.info(e.getMessage());
             return Result.error(e.getMessage());
@@ -66,14 +66,14 @@ public class TeacherController {
     @RequestMapping(value = "/AttendClazz", method = RequestMethod.POST)
     @ResponseBody
     public Result<String> AttendClazz(String teacherid, String clazzname) throws MyException {
-        teacherService.AttendClazz(teacherid, clazzname);
+        teacherService.attendClazz(teacherid, clazzname);
         return Result.success("上课成功");
     }
 
     @RequestMapping(value = "FinishClazz", method = RequestMethod.POST)
     @ResponseBody
     public Result<String> FinishClazz(String teacherid) throws MyException {
-        teacherService.FinishClazz(teacherid);
+        teacherService.finishClazz(teacherid);
         return Result.success("下课成功");
     }
 }

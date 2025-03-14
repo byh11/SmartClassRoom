@@ -5,7 +5,7 @@ import com.student.entity.Student;
 import org.com.execption.MyException;
 
 public interface StudentService {
-    void Register(Student student) throws MyException;
+    void register(Student student) throws MyException;
 
-    Student Login(String studentid, String password) throws MyException;
+    Student login(String studentid, String password) throws MyException;
 }

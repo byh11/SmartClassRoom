@@ -55,7 +55,7 @@ public class TeacherServiceImpl implements TeacherService {
     private ConcurrentHashMap<String, Boolean> map = new ConcurrentHashMap<>();
 
     @Override
-    public void Register(Teacher teacher) throws MyException {
+    public void register(Teacher teacher) throws MyException {
         if (redis.isExist(teacher.getTeacherid())) {
             log.info("用户名已存在");
             throw new MyException("用户名已存在");
@@ -71,7 +71,7 @@ public class TeacherServiceImpl implements TeacherService {
     }
 
     @Override
-    public Teacher Login(String teacherid, String password) throws MyException {
+    public Teacher login(String teacherid, String password) throws MyException {
         Teacher teacher;
         if (redis.isExist(teacherid)) {
             teacher = gson.fromJson(redis.getKey(teacherid), Teacher.class);
@@ -92,7 +92,7 @@ public class TeacherServiceImpl implements TeacherService {
 
 
     @Override
-    public void AttendClazz(String teacherid, String clazzname) {
+    public void attendClazz(String teacherid, String clazzname) {
         String id = yun.getId();
         String key = yun.getKey();
         map.put(teacherid, true);
@@ -128,7 +128,7 @@ public class TeacherServiceImpl implements TeacherService {
     }
 
     @Override
-    public void FinishClazz(String teacherid) {
+    public void finishClazz(String teacherid) {
         map.put(teacherid, false);
     }
 

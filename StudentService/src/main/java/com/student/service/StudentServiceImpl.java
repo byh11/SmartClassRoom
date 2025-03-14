@@ -22,7 +22,7 @@ public class StudentServiceImpl implements StudentService {
     private Gson gson;
 
     @Override
-    public void Register(Student student) throws MyException {
+    public void register(Student student) throws MyException {
         if (redis.isExist(student.getStudentid())) {
             throw new MyException("用户名已存在");
         }
@@ -36,7 +36,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public Student Login(String studentid, String password) throws MyException {
+    public Student login(String studentid, String password) throws MyException {
         Student student;
         if (redis.isExist(studentid)) {
             student = gson.fromJson(redis.getKey(studentid), Student.class);

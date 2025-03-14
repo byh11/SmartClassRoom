@@ -5,11 +5,11 @@ import com.teacher.entity.Teacher;
 import org.com.execption.MyException;
 
 public interface TeacherService {
-    void Register(Teacher teacher) throws MyException;
+    void register(Teacher teacher) throws MyException;
 
-    Teacher Login(String teacherid, String password) throws MyException;
+    Teacher login(String teacherid, String password) throws MyException;
 
-    void AttendClazz(String teacherid, String clazzname);
+    void attendClazz(String teacherid, String clazzname);
 
-    void FinishClazz(String teacherid);
+    void finishClazz(String teacherid);
 }

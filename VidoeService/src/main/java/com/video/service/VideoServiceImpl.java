@@ -49,7 +49,7 @@ public class VideoServiceImpl implements VideoService {
     private ConcurrentHashMap<String, Process> processMap = new ConcurrentHashMap<>();
 
     @Override
-    public void UploadVideo(MultipartFile file, String teacherid) throws MyException {
+    public void uploadVideo(MultipartFile file, String teacherid) throws MyException {
         VodUploadClient client = new VodUploadClient(yun.getId(), yun.getKey());
         VodUploadRequest request = new VodUploadRequest();
         try {
@@ -79,7 +79,7 @@ public class VideoServiceImpl implements VideoService {
     }
 
     @Override
-    public ArrayList<Video> SelectVideo(String videoName) throws MyException {
+    public ArrayList<Video> selectVideo(String videoName) throws MyException {
         ArrayList<Video> videos;
         if (redis.isExist(videoName)) {
             videos = (ArrayList<Video>) gson.fromJson(redis.getKey(videoName), ArrayList.class);
@@ -94,7 +94,7 @@ public class VideoServiceImpl implements VideoService {
     }
 
     @Override
-    public ArrayList<Video> SelectVideoPage(int pageSize, int pageNumber) throws MyException {
+    public ArrayList<Video> selectVideoPage(int pageSize, int pageNumber) throws MyException {
 
         ArrayList<Video> videos;
         RowBounds rowBounds = new RowBounds((pageNumber - 1) * pageSize, pageSize);
@@ -106,7 +106,7 @@ public class VideoServiceImpl implements VideoService {
     }
 
     @Override
-    public void DeleteVideo(String id) throws MyException {
+    public void deleteVideo(String id) throws MyException {
         try {
             // 实例化一个认证对象，入参需要传入腾讯云账户secretId，secretKey,此处还需注意密钥对的保密
             // 密钥可前往https://console.cloud.tencent.com/cam/capi网站进行获取
@@ -133,19 +133,19 @@ public class VideoServiceImpl implements VideoService {
     }
 
     @Override
-    public void DownLoadVideo(String id) {
+    public void downLoadVideo(String id) {
 
 
     }
 
     @Override
-    public void SaveVideo(Video video) {
+    public void saveVideo(Video video) {
         videoMapper.insert(video.getId(), video.getTeacherid(), video.getUrl(), video.getVideoname());
         redis.registerSet(String.valueOf(video.getId()), gson.toJson(video));
     }
 
     @Override
-    public void Live(String teacherid) throws MyException {
+    public void live(String teacherid) throws MyException {
         Process process = null;
         String ffmpeg = "ffmpeg -f v4l2 -input_format yuyv422 -video_size 640x480 -framerate 30 -i /dev/video0 -f alsa -i default -c:v libx264 -preset ultrafast -tune zerolatency -c:a aac -f flv rtmp://127.0.0.1:1935/hls/" + teacherid;
         ProcessBuilder pb = new ProcessBuilder("bash", "-c", ffmpeg);
@@ -163,7 +163,7 @@ public class VideoServiceImpl implements VideoService {
     }
 
     @Override
-    public void StopLive(String teacherid) throws MyException {
+    public void stopLive(String teacherid) throws MyException {
         if (processMap.containsKey(teacherid)) {
             processMap.get(teacherid).destroy();
             processMap.remove(teacherid);
