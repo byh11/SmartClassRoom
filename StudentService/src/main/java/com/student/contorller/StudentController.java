@@ -22,7 +22,7 @@ public class StudentController {
     @RequestMapping(value = "/test", method = RequestMethod.GET)
     @ResponseBody
     public Result<String> test() {
-        System.out.println("11111111111111111111");
+        System.out.println("111111111111111111");
         return Result.success("测试成功");
     }
 
