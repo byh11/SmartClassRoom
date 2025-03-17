@@ -100,9 +100,7 @@ export default {
       birthday: '',
       sex: '',
       clazz: '',
-      major: '',
-      teacherid: '',
-      college: ''
+      major: ''
     });
     const router = useRouter();
 
@@ -117,9 +115,7 @@ export default {
         birthday: '',
         sex: '',
         clazz: '',
-        major: '',
-        teacherid: '',
-        college: ''
+        major: ''
       };
     };
 

@@ -5,14 +5,18 @@ spring:
   main:
     web-application-type: reactive
   datasource:
-    url: jdbc:mysql://localhost:3306/smartclassroom
+    url: jdbc:mysql://1.94.170.182:3306/smartclassroom
     username: root
     password: root
+  redis:
+    host: 1.94.170.182
+    port: 6379
+    password: redis
   application:
     name: gateway
   cloud:
     nacos:
-      server-addr: localhost:8848
+      server-addr: 1.94.170.182:12588
       username: nacos
       password: nacos
     gateway:
@@ -29,12 +33,12 @@ spring:
           uri: lb://video-service
           predicates:
             - Path=/video/**
-    globalcors:
-      add-to-simple-url-handler-mapping: true
-      corsConfigurations:
-        '*':
-          allowedOrgins: '*'
-          allowedMethods: '*'
-          allowedHeaders: '*'
-          allowCredentials: true
-          maxAge: 36000
+      globalcors:
+        add-to-simple-url-handler-mapping: true  # 确保配置生效于所有路由
+        cors-configurations: # 注意属性名是 cors-configurations（小写）
+          '[/**]': # 匹配所有路径
+            allowedOrigins: "*"  # 允许所有源（注意：生产环境需指定具体域名）
+            allowedMethods: "*"  # 允许所有HTTP方法
+            allowedHeaders: "*"  # 允许所有请求头
+            allowCredentials: true  # 允许携带凭证（如 Cookie）
+            max-age: 36000  # 跨域策略缓存时间（单位：秒）

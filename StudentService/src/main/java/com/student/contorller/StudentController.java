@@ -7,6 +7,7 @@ import org.com.entity.Result;
 import org.com.execption.MyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -27,8 +28,7 @@ public class StudentController {
     }
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
-    @ResponseBody
-    public Result<String> register(Student student) {
+    public Result<String> register(@RequestBody Student student) {
         System.out.println(student.toString());
         try {
             studentService.register(student);

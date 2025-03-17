@@ -7,15 +7,15 @@ export default {
     server: {
         proxy: {
             '/student': {
-                target: 'http://localhost:3000', // 后端服务器地址
+                target: 'http://localhost:12000', // 后端服务器地址
                 changeOrigin: true,
             },
             '/teacher': {
-                target: 'http://localhost:3000',
+                target: 'http://localhost:12000',
                 changeOrigin: true,
             },
             '/video': {
-                target: 'http://localhost:3000',
+                target: 'http://localhost:12000',
                 changeOrigin: true,
             },
         },

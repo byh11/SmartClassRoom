@@ -1,11 +1,25 @@
+import axios from 'axios';
+
 export const mockApi = {
+
     // 模拟学生注册
-    studentRegister(student) {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve({code: 200, message: '注册成功', data: null});
-            }, 1000);
-        });
+    async studentRegister(student) {
+        try {
+            console.log(student)
+            const response = await axios.post(
+                'http://10.0.220.99:12000/student/register',
+                student,
+                {
+                    headers: {
+                        'Content-Type': 'application/json', // 显式设置 Content-Type（可选）
+                    },
+                }
+            );
+            return response.data; // 返回后端响应数据
+        } catch (error) {
+            console.error('注册失败:', error);
+            throw error;
+        }
     },
 
     // 模拟学生登录
