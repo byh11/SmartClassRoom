@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 @RequestMapping("/video")
@@ -56,8 +56,8 @@ public class VideoController {
 
     @RequestMapping(value = "/SelectVideoAll", method = RequestMethod.POST)
     @ResponseBody
-    public Result<ArrayList> selectVideoAll(int pageSize, int pageNumber) {
-        ArrayList<Video> videos = null;
+    public Result<List> selectVideoAll(int pageSize, int pageNumber) {
+        List<Video> videos = null;
         try {
             videos = videoService.selectVideoPage(pageSize, pageNumber);
         } catch (MyException e) {
@@ -69,8 +69,8 @@ public class VideoController {
 
     @RequestMapping(value = "/SelectVideo", method = RequestMethod.POST)
     @ResponseBody
-    public Result<ArrayList> selectVideo(String videoName) {
-        ArrayList<Video> videos = null;
+    public Result<List> selectVideo(String videoName) {
+        List<Video> videos = null;
         try {
             videos = videoService.selectVideo(videoName);
         } catch (MyException e) {

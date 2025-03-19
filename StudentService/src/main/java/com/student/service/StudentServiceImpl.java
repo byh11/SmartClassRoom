@@ -1,5 +1,6 @@
 package com.student.service;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.gson.Gson;
 import com.student.entity.Student;
 import com.student.mapper.Redis;
@@ -7,7 +8,10 @@ import com.student.mapper.StudentMapper;
 import com.student.service.service.StudentService;
 import org.com.execption.MyException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+
+import java.sql.SQLException;
 
 @Service
 public class StudentServiceImpl implements StudentService {
@@ -23,25 +27,49 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public void register(Student student) throws MyException {
+        if (student.getStudentid().isEmpty() || student.getPassword().isEmpty()) {
+            throw new MyException("用户名或密码不能为空");
+        }
         if (redis.isExist(student.getStudentid())) {
-            throw new MyException("用户名已存在");
+            throw new MyException("该用户已注册，请勿重复注册");
         }
-        if (studentMapper.SelectById(student.getStudentid()) != null) {
-            redis.registerSet(student.getStudentid(), gson.toJson(student));
-            throw new MyException("用户名已存在");
+//        if (studentMapper.SelectById(student.getStudentid()) != null) {
+//            redis.registerSet(student.getStudentid(), gson.toJson(student));
+//            throw new MyException("用户名已存在");
+//        }
+        try {
+            studentMapper.insert(student);
+//            studentMapper.Insert(student.getStudentid(), student.getPassword(), student.getName(), student.getPhone(),
+//                    student.getEmail(), student.getBirthday(), student.getSex(), student.getClazz(), student.getMajor());
+            try {
+                redis.registerSet(student.getStudentid(), gson.toJson(student));
+            } catch (Exception e) {
+
+            }
+        } catch (DuplicateKeyException e) {
+            if (e.getCause() instanceof SQLException) {
+                SQLException sqlEx = (SQLException) e.getCause();
+                if (sqlEx.getErrorCode() == 1062) {
+                    throw new MyException("该用户已注册，请勿重复注册");
+                }
+            }
+        } catch (Exception e) {
+            throw new MyException("系统异常，请稍后重试");
         }
-        studentMapper.Insert(student.getStudentid(), student.getPassword(), student.getName(), student.getPhone(),
-                student.getEmail(), student.getBirthday(), student.getSex(), student.getClazz(), student.getMajor());
-        redis.registerSet(student.getStudentid(), gson.toJson(student));
+
     }
 
     @Override
     public Student login(String studentid, String password) throws MyException {
+        if (studentid.isEmpty() || password.isEmpty()) {
+            throw new MyException("用户名或密码不能为空");
+        }
         Student student;
         if (redis.isExist(studentid)) {
             student = gson.fromJson(redis.getKey(studentid), Student.class);
         } else {
-            student = studentMapper.SelectByStudent(studentid);
+//            student = studentMapper.SelectByStudent(studentid);
+            student = studentMapper.selectById(studentid);
         }
         if (student == null) {
             throw new MyException("当前用户不存在");
@@ -51,5 +79,40 @@ public class StudentServiceImpl implements StudentService {
         } else {
             throw new MyException("密码错误");
         }
+    }
+
+    @Override
+    public String updatePassword(String studentid, String oldPassword, String newPassword) throws MyException {
+        LambdaUpdateWrapper<Student> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Student::getStudentid, studentid) // 主键条件
+                .set(Student::getPassword, newPassword); // 设置新密码
+
+        int rows = studentMapper.update(null, updateWrapper); // 第一个参数传 null，仅使用 wrapper
+        if (rows > 0) {
+            redis.deleteKey(studentid);
+            return "修改成功";
+        }
+        return "修改失败";
+    }
+
+    @Override
+    public Student getStudentInfo(String studentid) throws MyException {
+        if (redis.isExist(studentid)) {
+            return gson.fromJson(redis.getKey(studentid), Student.class);
+        }
+        Student student = studentMapper.selectById(studentid);
+        if (student != null) {
+            return student;
+        }
+        return null;
+    }
+
+    @Override
+    public Student updateStudentInfo(String studentid, Student student) throws MyException {
+        if (studentMapper.updateById(student) > 0) {
+            redis.deleteKey(studentid);
+            return student;
+        }
+        return student;
     }
 }

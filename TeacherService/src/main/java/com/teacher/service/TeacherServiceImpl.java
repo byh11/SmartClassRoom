@@ -1,6 +1,7 @@
 package com.teacher.service;
 
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.gson.Gson;
 import com.qcloud.vod.VodUploadClient;
 import com.qcloud.vod.model.VodUploadRequest;
@@ -27,9 +28,11 @@ import com.tencentcloudapi.vod.v20180717.models.DeleteMediaResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.com.execption.MyException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -56,27 +59,52 @@ public class TeacherServiceImpl implements TeacherService {
 
     @Override
     public void register(Teacher teacher) throws MyException {
+        if (teacher.getTeacherid().isEmpty() || teacher.getPassword().isEmpty()) {
+            log.info("用户名或密码为空");
+            throw new MyException("用户名或密码为空");
+        }
         if (redis.isExist(teacher.getTeacherid())) {
-            log.info("用户名已存在");
-            throw new MyException("用户名已存在");
+            log.info("用户名已存在，请勿重复注册");
+            throw new MyException("用户已存在，请勿重复注册");
         }
-        if (teacherMapper.SelectById(teacher.getTeacherid()) != null) {
-            redis.registerSet(teacher.getTeacherid(), gson.toJson(teacher));
-            log.info("用户名已存在");
-            throw new MyException("用户名已存在");
+//        if (teacherMapper.SelectById(teacher.getTeacherid()) != null) {
+//            redis.registerSet(teacher.getTeacherid(), gson.toJson(teacher));
+//            log.info("用户名已存在，请勿重复注册");
+//            throw new MyException("用户名已存在，请勿重复注册");
+//        }
+        try {
+            teacherMapper.insert(teacher);
+//            teacherMapper.Insert(teacher.getTeacherid(), teacher.getPassword(), teacher.getName(), teacher.getPhone(),
+//                    teacher.getEmail(), teacher.getBirthday(), teacher.getSex(), teacher.getCollege());
+            try {
+                redis.registerSet(teacher.getTeacherid(), gson.toJson(teacher));
+            } catch (Exception e) {
+
+            }
+        } catch (DuplicateKeyException e) {
+            if (e.getCause() instanceof SQLException) {
+                SQLException sqlEx = (SQLException) e.getCause();
+                if (sqlEx.getErrorCode() == 1062) {
+                    throw new MyException("该用户已注册，请勿重复注册");
+                }
+            }
+        } catch (Exception e) {
+            throw new MyException("系统异常，请稍后重试");
         }
-        teacherMapper.Insert(teacher.getTeacherid(), teacher.getPassword(), teacher.getName(), teacher.getPhone(),
-                teacher.getEmail(), teacher.getBirthday(), teacher.getSex(), teacher.getCollege());
-        redis.registerSet(teacher.getTeacherid(), gson.toJson(teacher));
     }
 
     @Override
     public Teacher login(String teacherid, String password) throws MyException {
+        if (teacherid.isEmpty() || password.isEmpty()) {
+            log.info("用户名或密码为空");
+            throw new MyException("用户名或密码为空");
+        }
         Teacher teacher;
         if (redis.isExist(teacherid)) {
             teacher = gson.fromJson(redis.getKey(teacherid), Teacher.class);
         } else {
-            teacher = teacherMapper.SelectByTeacher(teacherid);
+            teacher = teacherMapper.selectById(teacherid);
+//            teacher = teacherMapper.SelectByTeacher(teacherid);
         }
         if (teacher == null) {
             log.info("当前用户不存在");
@@ -90,6 +118,40 @@ public class TeacherServiceImpl implements TeacherService {
         }
     }
 
+    @Override
+    public String updatePassword(String teacherid, String oldPassword, String newPassword) throws MyException {
+        LambdaUpdateWrapper<Teacher> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Teacher::getTeacherid, teacherid) // 主键条件
+                .set(Teacher::getPassword, newPassword); // 设置新密码
+
+        int rows = teacherMapper.update(null, updateWrapper); // 第一个参数传 null，仅使用 wrapper
+        if (rows > 0) {
+            redis.deleteKey(teacherid);
+            return "修改成功";
+        }
+        return "修改失败";
+    }
+
+    @Override
+    public Teacher getTeacherInfo(String teacherid) throws MyException {
+        if (redis.isExist(teacherid)) {
+            return gson.fromJson(redis.getKey(teacherid), Teacher.class);
+        }
+        Teacher teacher = teacherMapper.selectById(teacherid);
+        if (teacher != null) {
+            return teacher;
+        }
+        return null;
+    }
+
+    @Override
+    public Teacher updateTeacherInfo(String teacherid, Teacher teacher) throws MyException {
+        if (teacherMapper.updateById(teacher) > 0) {
+            redis.deleteKey(teacherid);
+            return teacher;
+        }
+        return teacher;
+    }
 
     @Override
     public void attendClazz(String teacherid, String clazzname) {

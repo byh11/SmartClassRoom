@@ -10,9 +10,7 @@ import org.com.entity.Result;
 import org.com.execption.MyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/teacher")
@@ -39,7 +37,7 @@ public class TeacherController {
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     @ResponseBody
-    public Result<String> register(Teacher teacher) {
+    public Result<String> register(@RequestBody Teacher teacher) {
         System.out.println(teacher.toString());
         try {
             teacherService.register(teacher);
@@ -52,7 +50,7 @@ public class TeacherController {
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ResponseBody
-    public Result<Teacher> login(String teacherid, String password) {
+    public Result<Teacher> login(@RequestParam("teacherid") String teacherid, @RequestParam("password") String password) {
         Teacher teacher = null;
         try {
             teacher = teacherService.login(teacherid, password);

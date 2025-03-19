@@ -1,5 +1,9 @@
 package com.video.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import com.qcloud.vod.VodUploadClient;
 import com.qcloud.vod.model.VodUploadRequest;
@@ -17,7 +21,6 @@ import com.video.mapper.Redis;
 import com.video.mapper.VideoMapper;
 import com.video.service.service.VideoService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.session.RowBounds;
 import org.com.execption.MyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -27,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -72,20 +76,24 @@ public class VideoServiceImpl implements VideoService {
             // 业务方进行异常处理
             throw new MyException("视频存储错误");
         }
-        videoMapper.insert(video.getId(), video.getTeacherid(), video.getUrl(), video.getVideoname());
+        videoMapper.insert(video);
+//        videoMapper.insert(video.getId(), video.getTeacherid(), video.getUrl(), video.getVideoname());
         redis.registerSet(String.valueOf(video.getId()), gson.toJson(video));
         File file1 = new File("/opt/SmartClassRoom/11/" + file.getOriginalFilename());
         file1.delete();
     }
 
     @Override
-    public ArrayList<Video> selectVideo(String videoName) throws MyException {
-        ArrayList<Video> videos;
+    public List<Video> selectVideo(String videoName) throws MyException {
+        List<Video> videos;
         if (redis.isExist(videoName)) {
-            videos = (ArrayList<Video>) gson.fromJson(redis.getKey(videoName), ArrayList.class);
+            videos = (List<Video>) gson.fromJson(redis.getKey(videoName), ArrayList.class);
             return videos;
         }
-        videos = videoMapper.SelectVideo(videoName);
+        videos = (List<Video>) videoMapper.selectOne(
+                Wrappers.<Video>lambdaQuery().eq(Video::getVideoname, videoName)
+        );
+//        videos = videoMapper.SelectVideo(videoName);
         if (videos != null) {
             redis.registerSet(videoName, gson.toJson(videos));
             return videos;
@@ -94,11 +102,15 @@ public class VideoServiceImpl implements VideoService {
     }
 
     @Override
-    public ArrayList<Video> selectVideoPage(int pageSize, int pageNumber) throws MyException {
+    public List<Video> selectVideoPage(int pageSize, int pageNumber) throws MyException {
 
         ArrayList<Video> videos;
-        RowBounds rowBounds = new RowBounds((pageNumber - 1) * pageSize, pageSize);
-        videos = videoMapper.SelectVideoAll(rowBounds);
+//        RowBounds rowBounds = new RowBounds((pageNumber - 1) * pageSize, pageSize);
+//        videos = videoMapper.SelectVideoAll(rowBounds);
+        IPage<Video> page = new Page<>(1, 12); // 当前页1，每页10条
+        QueryWrapper<Video> queryWrapper = new QueryWrapper<>();
+        IPage<Video> userPage = videoMapper.selectPage(page, queryWrapper);
+        videos = (ArrayList<Video>) userPage.getRecords(); // 获取当前页数据
         if (videos != null) {
             return videos;
         }
@@ -129,7 +141,8 @@ public class VideoServiceImpl implements VideoService {
         } catch (TencentCloudSDKException e) {
             throw new MyException("删除失败");
         }
-        videoMapper.DeleteVideo(id);
+        videoMapper.deleteById(id);
+//        videoMapper.DeleteVideo(id);
     }
 
     @Override
@@ -140,7 +153,8 @@ public class VideoServiceImpl implements VideoService {
 
     @Override
     public void saveVideo(Video video) {
-        videoMapper.insert(video.getId(), video.getTeacherid(), video.getUrl(), video.getVideoname());
+        videoMapper.insert(video);
+//        videoMapper.insert(video.getId(), video.getTeacherid(), video.getUrl(), video.getVideoname());
         redis.registerSet(String.valueOf(video.getId()), gson.toJson(video));
     }
 

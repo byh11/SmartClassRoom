@@ -4,13 +4,13 @@ server:
 # 数据库配置
 spring:
   datasource:
-    url: jdbc:mysql://1.94.170.182:3306/smartclassroom
+    url: jdbc:mysql://1.94.170.182:3306/smartclassroom?useAffectedRows=true
     username: root
     password: root
   redis:
     host: 1.94.170.182
     port: 6379
-    password: redis
+    password: byh2001..@
   application:
     name: video-service
   cloud:

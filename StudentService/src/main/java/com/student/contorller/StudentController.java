@@ -7,10 +7,9 @@ import org.com.entity.Result;
 import org.com.execption.MyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @Controller
 @RequestMapping("/student")
@@ -28,7 +27,8 @@ public class StudentController {
     }
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
-    public Result<String> register(@RequestBody Student student) {
+    @ResponseBody
+    public Result<?> register(@RequestBody Student student) {
         System.out.println(student.toString());
         try {
             studentService.register(student);
@@ -41,14 +41,23 @@ public class StudentController {
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ResponseBody
-    public Result<Student> login(String studentid, String password) {
-        Student student = null;
+    public Result<?> login(@RequestParam("studentid") String studentid, @RequestParam("password") String password) {
         try {
-            student = studentService.login(studentid, password);
+            Student student = studentService.login(studentid, password);
+            return Result.success("登录成功", student);
         } catch (MyException e) {
             log.info(e.getMessage());
             return Result.error(e.getMessage());
         }
-        return Result.success("登录成功", student);
+    }
+
+    @PostMapping("/{studentid}/change-password")
+    public Result<?> changePassword(@PathVariable String studentid, @RequestBody Map<String, String> requestBody) {
+        try {
+            String result = studentService.updatePassword(studentid, requestBody.get("oldPassword"), requestBody.get("newPassword"));
+            return Result.success(result);
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
     }
 }

@@ -1,5 +1,7 @@
 package com.teacher.entity;
 
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,8 +12,11 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@TableName("teacher")
 public class Teacher {
+    @TableId(value = "teacherid")
     private String teacherid;
+    @TableId(value = "password")
     private String password;
     private String name;
     private String phone;

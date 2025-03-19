@@ -8,4 +8,10 @@ public interface StudentService {
     void register(Student student) throws MyException;
 
     Student login(String studentid, String password) throws MyException;
+
+    String updatePassword(String studentid, String oldPassword, String newPassword) throws MyException;
+
+    Student getStudentInfo(String studentid) throws MyException;
+
+    Student updateStudentInfo(String studentid, Student student) throws MyException;
 }
