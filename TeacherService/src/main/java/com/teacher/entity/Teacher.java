@@ -16,7 +16,6 @@ import java.util.Date;
 public class Teacher {
     @TableId(value = "teacherid")
     private String teacherid;
-    @TableId(value = "password")
     private String password;
     private String name;
     private String phone;

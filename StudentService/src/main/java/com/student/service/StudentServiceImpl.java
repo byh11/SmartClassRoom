@@ -3,10 +3,10 @@ package com.student.service;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.gson.Gson;
 import com.student.entity.Student;
-import com.student.mapper.Redis;
 import com.student.mapper.StudentMapper;
 import com.student.service.service.StudentService;
 import org.com.execption.MyException;
+import org.com.mapper.Redis;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -34,7 +34,7 @@ public class StudentServiceImpl implements StudentService {
             throw new MyException("该用户已注册，请勿重复注册");
         }
 //        if (studentMapper.SelectById(student.getStudentid()) != null) {
-//            redis.registerSet(student.getStudentid(), gson.toJson(student));
+//            redis.setKey(student.getStudentid(), gson.toJson(student));
 //            throw new MyException("用户名已存在");
 //        }
         try {
@@ -42,7 +42,7 @@ public class StudentServiceImpl implements StudentService {
 //            studentMapper.Insert(student.getStudentid(), student.getPassword(), student.getName(), student.getPhone(),
 //                    student.getEmail(), student.getBirthday(), student.getSex(), student.getClazz(), student.getMajor());
             try {
-                redis.registerSet(student.getStudentid(), gson.toJson(student));
+                redis.setKey(student.getStudentid(), gson.toJson(student));
             } catch (Exception e) {
 
             }
@@ -69,7 +69,9 @@ public class StudentServiceImpl implements StudentService {
             student = gson.fromJson(redis.getKey(studentid), Student.class);
         } else {
 //            student = studentMapper.SelectByStudent(studentid);
-            student = studentMapper.selectById(studentid);
+            LambdaUpdateWrapper<Student> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.eq(Student::getStudentid, studentid);
+            student = studentMapper.selectOne(updateWrapper);
         }
         if (student == null) {
             throw new MyException("当前用户不存在");
@@ -83,6 +85,11 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public String updatePassword(String studentid, String oldPassword, String newPassword) throws MyException {
+        try {
+            login(studentid, oldPassword);
+        } catch (MyException e) {
+            throw new MyException("原密码错误，修改失败");
+        }
         LambdaUpdateWrapper<Student> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Student::getStudentid, studentid) // 主键条件
                 .set(Student::getPassword, newPassword); // 设置新密码
@@ -100,7 +107,9 @@ public class StudentServiceImpl implements StudentService {
         if (redis.isExist(studentid)) {
             return gson.fromJson(redis.getKey(studentid), Student.class);
         }
-        Student student = studentMapper.selectById(studentid);
+        LambdaUpdateWrapper<Student> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Student::getStudentid, studentid);
+        Student student = studentMapper.selectOne(updateWrapper);
         if (student != null) {
             return student;
         }
@@ -109,8 +118,11 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public Student updateStudentInfo(String studentid, Student student) throws MyException {
-        if (studentMapper.updateById(student) > 0) {
+        LambdaUpdateWrapper<Student> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Student::getStudentid, studentid);
+        if (studentMapper.update(student, updateWrapper) > 0) {
             redis.deleteKey(studentid);
+            redis.setKey(studentid, gson.toJson(student));
             return student;
         }
         return student;

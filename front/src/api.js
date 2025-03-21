@@ -5,7 +5,6 @@ export const mockApi = {
     // 模拟学生注册
     async studentRegister(student) {
         try {
-            console.log(student)
             const response = await axios.post(
                 'http://10.0.220.99:12000/student/register',
                 student,
@@ -23,57 +22,58 @@ export const mockApi = {
     },
 
     // 模拟学生登录
-    studentLogin(studentId, password) {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                const student = {
-                    studentid: studentId,
-                    name: '张三',
-                    phone: '123456789',
-                    email: 'student@example.com',
-                    birthday: new Date(),
-                    sex: '男',
-                    clazz: '计算机科学',
-                    major: '计算机工程',
-                };
-                if (studentId === 'testStudent' && password === '123456') {
-                    resolve({code: 200, message: '登录成功', data: student});
-                } else {
-                    resolve({code: 401, message: '登录失败，用户名或密码错误', data: null});
-                }
-            }, 1000);
-        });
+    async studentLogin(studentId, password) {
+        try {
+            const params = new URLSearchParams({
+                studentid: studentId,
+                password: password
+            });
+            const response = await axios.post(
+                'http://10.0.220.99:12000/student/login',
+                params
+            );
+            return response.data; // 返回后端响应数据
+        } catch (error) {
+            console.error('登录失败:', error);
+            throw error;
+        }
     },
 
     // 模拟教师注册
-    teacherRegister(teacher) {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve({code: 200, message: '注册成功', data: null});
-            }, 1000);
-        });
+    async teacherRegister(teacher) {
+        try {
+            const response = await axios.post(
+                'http://10.0.220.99:12000/teacher/register',
+                teacher,
+                {
+                    headers: {
+                        'Content-Type': 'application/json', // 显式设置 Content-Type（可选）
+                    },
+                }
+            );
+            return response.data; // 返回后端响应数据
+        } catch (error) {
+            console.error('注册失败:', error);
+            throw error;
+        }
     },
 
     // 模拟教师登录
-    teacherLogin(teacherId, password) {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                const teacher = {
-                    teacherid: teacherId,
-                    name: '李四',
-                    phone: '987654321',
-                    email: 'teacher@example.com',
-                    birthday: new Date(),
-                    sex: '女',
-                    college: '工程学院',
-                };
-                if (teacherId === 'teacher123' && password === '123456') {
-                    resolve({code: 200, message: '登录成功', data: teacher});
-                } else {
-                    resolve({code: 401, message: '登录失败，用户名或密码错误', data: null});
-                }
-            }, 1000);
-        });
+    async teacherLogin(teacherId, password) {
+        try {
+            const params = new URLSearchParams({
+                teacherid: teacherId,
+                password: password
+            });
+            const response = await axios.post(
+                'http://10.0.220.99:12000/teacher/login',
+                params
+            );
+            return response.data; // 返回后端响应数据
+        } catch (error) {
+            console.error('登录失败:', error);
+            throw error;
+        }
     },
 
     // 教师上课

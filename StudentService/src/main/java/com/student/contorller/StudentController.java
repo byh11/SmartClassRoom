@@ -52,9 +52,32 @@ public class StudentController {
     }
 
     @PostMapping("/{studentid}/change-password")
+    @ResponseBody
     public Result<?> changePassword(@PathVariable String studentid, @RequestBody Map<String, String> requestBody) {
         try {
             String result = studentService.updatePassword(studentid, requestBody.get("oldPassword"), requestBody.get("newPassword"));
+            return Result.success(result);
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
+
+    @GetMapping("/{studentid}/info")
+    @ResponseBody
+    public Result<?> getStudentInfo(@PathVariable String studentid) {
+        try {
+            Student result = studentService.getStudentInfo(studentid);
+            return Result.success(result);
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
+
+    @PostMapping("/{studentid}/info")
+    @ResponseBody
+    public Result<?> postStudentInfo(@PathVariable String studentid, @RequestBody Student requestBody) {
+        try {
+            Student result = studentService.updateStudentInfo(studentid, requestBody);
             return Result.success(result);
         } catch (Exception e) {
             return Result.error(e.getMessage());

@@ -2,11 +2,11 @@ package org.com.mapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
 
-@Repository
+@Component
 public class Redis {
     @Autowired
     private RedisTemplate redisTemplate;
@@ -16,7 +16,7 @@ public class Redis {
         return redisTemplate.hasKey(key);
     }
 
-    public void registerSet(String key, String value) {
+    public void setKey(String key, String value) {
         // 使用RedisTemplate的opsForValue方法设置指定key的值
         redisTemplate.opsForValue().set(key, value);
 

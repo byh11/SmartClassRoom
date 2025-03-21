@@ -17,11 +17,11 @@ import com.tencentcloudapi.vod.v20180717.models.DeleteMediaRequest;
 import com.tencentcloudapi.vod.v20180717.models.DeleteMediaResponse;
 import com.video.config.Yun;
 import com.video.entity.Video;
-import com.video.mapper.Redis;
 import com.video.mapper.VideoMapper;
 import com.video.service.service.VideoService;
 import lombok.extern.slf4j.Slf4j;
 import org.com.execption.MyException;
+import org.com.mapper.Redis;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Service;
@@ -78,7 +78,7 @@ public class VideoServiceImpl implements VideoService {
         }
         videoMapper.insert(video);
 //        videoMapper.insert(video.getId(), video.getTeacherid(), video.getUrl(), video.getVideoname());
-        redis.registerSet(String.valueOf(video.getId()), gson.toJson(video));
+        redis.setKey(String.valueOf(video.getId()), gson.toJson(video));
         File file1 = new File("/opt/SmartClassRoom/11/" + file.getOriginalFilename());
         file1.delete();
     }
@@ -95,7 +95,7 @@ public class VideoServiceImpl implements VideoService {
         );
 //        videos = videoMapper.SelectVideo(videoName);
         if (videos != null) {
-            redis.registerSet(videoName, gson.toJson(videos));
+            redis.setKey(videoName, gson.toJson(videos));
             return videos;
         }
         throw new MyException("查询失败");
@@ -155,7 +155,7 @@ public class VideoServiceImpl implements VideoService {
     public void saveVideo(Video video) {
         videoMapper.insert(video);
 //        videoMapper.insert(video.getId(), video.getTeacherid(), video.getUrl(), video.getVideoname());
-        redis.registerSet(String.valueOf(video.getId()), gson.toJson(video));
+        redis.setKey(String.valueOf(video.getId()), gson.toJson(video));
     }
 
     @Override

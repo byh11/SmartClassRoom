@@ -1,8 +1,12 @@
 package com.teacher.service.service;
 
 
+import com.teacher.entity.ClassRecord;
 import com.teacher.entity.Teacher;
 import org.com.execption.MyException;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 public interface TeacherService {
     void register(Teacher teacher) throws MyException;
@@ -17,5 +21,9 @@ public interface TeacherService {
 
     void attendClazz(String teacherid, String clazzname);
 
-    void finishClazz(String teacherid);
+    void finishClazz(String teacherid, MultipartFile video, String className, String courseName, String startTime, String endTime);
+
+    List<ClassRecord> getClassRecord(String teacherid, int pageNumber);
+
+    void insertClassRecord(String teacherid, ClassRecord classRecord);
 }

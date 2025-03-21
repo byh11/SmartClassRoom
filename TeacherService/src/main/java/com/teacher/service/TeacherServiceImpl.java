@@ -2,15 +2,17 @@ package com.teacher.service;
 
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import com.qcloud.vod.VodUploadClient;
 import com.qcloud.vod.model.VodUploadRequest;
 import com.qcloud.vod.model.VodUploadResponse;
 import com.teacher.client.VideoClient;
 import com.teacher.config.Yun;
+import com.teacher.entity.ClassRecord;
 import com.teacher.entity.Teacher;
-import com.teacher.entity.Video;
-import com.teacher.mapper.Redis;
+import com.teacher.mapper.ClassRecordMapper;
 import com.teacher.mapper.TeacherMapper;
 import com.teacher.service.service.TeacherService;
 import com.tencentcloudapi.asr.v20190614.AsrClient;
@@ -27,13 +29,21 @@ import com.tencentcloudapi.vod.v20180717.models.DeleteMediaRequest;
 import com.tencentcloudapi.vod.v20180717.models.DeleteMediaResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.com.execption.MyException;
+import org.com.mapper.Redis;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -55,7 +65,29 @@ public class TeacherServiceImpl implements TeacherService {
     @Autowired
     private VideoClient videoClient;
 
+    @Autowired
+    private ClassRecordMapper classRecordMapper;
+
     private ConcurrentHashMap<String, Boolean> map = new ConcurrentHashMap<>();
+
+    public static void deleteFile(String filePath) throws IOException {
+        // 创建代表目标文件的File对象
+        File fileToDelete = new File(filePath);
+
+        // 检查文件是否存在并且是一个文件（而不是目录）
+        if (fileToDelete.exists() && fileToDelete.isFile()) {
+            // 尝试删除文件
+            boolean isDeleted = fileToDelete.delete();
+
+            if (isDeleted) {
+                System.out.println("文件删除成功: " + filePath);
+            } else {
+                throw new IOException("未能删除文件: " + filePath);
+            }
+        } else {
+            throw new IOException("文件不存在或路径指向的是一个目录: " + filePath);
+        }
+    }
 
     @Override
     public void register(Teacher teacher) throws MyException {
@@ -68,7 +100,7 @@ public class TeacherServiceImpl implements TeacherService {
             throw new MyException("用户已存在，请勿重复注册");
         }
 //        if (teacherMapper.SelectById(teacher.getTeacherid()) != null) {
-//            redis.registerSet(teacher.getTeacherid(), gson.toJson(teacher));
+//            redis.setKey(teacher.getTeacherid(), gson.toJson(teacher));
 //            log.info("用户名已存在，请勿重复注册");
 //            throw new MyException("用户名已存在，请勿重复注册");
 //        }
@@ -77,7 +109,7 @@ public class TeacherServiceImpl implements TeacherService {
 //            teacherMapper.Insert(teacher.getTeacherid(), teacher.getPassword(), teacher.getName(), teacher.getPhone(),
 //                    teacher.getEmail(), teacher.getBirthday(), teacher.getSex(), teacher.getCollege());
             try {
-                redis.registerSet(teacher.getTeacherid(), gson.toJson(teacher));
+                redis.setKey(teacher.getTeacherid(), gson.toJson(teacher));
             } catch (Exception e) {
 
             }
@@ -103,7 +135,9 @@ public class TeacherServiceImpl implements TeacherService {
         if (redis.isExist(teacherid)) {
             teacher = gson.fromJson(redis.getKey(teacherid), Teacher.class);
         } else {
-            teacher = teacherMapper.selectById(teacherid);
+            LambdaUpdateWrapper<Teacher> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.eq(Teacher::getTeacherid, teacherid);
+            teacher = teacherMapper.selectOne(updateWrapper);
 //            teacher = teacherMapper.SelectByTeacher(teacherid);
         }
         if (teacher == null) {
@@ -120,6 +154,11 @@ public class TeacherServiceImpl implements TeacherService {
 
     @Override
     public String updatePassword(String teacherid, String oldPassword, String newPassword) throws MyException {
+        try {
+            login(teacherid, oldPassword);
+        } catch (MyException e) {
+            throw new MyException("原密码错误，修改失败");
+        }
         LambdaUpdateWrapper<Teacher> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Teacher::getTeacherid, teacherid) // 主键条件
                 .set(Teacher::getPassword, newPassword); // 设置新密码
@@ -137,7 +176,9 @@ public class TeacherServiceImpl implements TeacherService {
         if (redis.isExist(teacherid)) {
             return gson.fromJson(redis.getKey(teacherid), Teacher.class);
         }
-        Teacher teacher = teacherMapper.selectById(teacherid);
+        LambdaUpdateWrapper<Teacher> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Teacher::getTeacherid, teacherid);
+        Teacher teacher = teacherMapper.selectOne(updateWrapper);
         if (teacher != null) {
             return teacher;
         }
@@ -146,8 +187,11 @@ public class TeacherServiceImpl implements TeacherService {
 
     @Override
     public Teacher updateTeacherInfo(String teacherid, Teacher teacher) throws MyException {
-        if (teacherMapper.updateById(teacher) > 0) {
+        LambdaUpdateWrapper<Teacher> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Teacher::getTeacherid, teacherid);
+        if (teacherMapper.update(teacher, updateWrapper) > 0) {
             redis.deleteKey(teacherid);
+            redis.setKey(teacherid, gson.toJson(teacher));
             return teacher;
         }
         return teacher;
@@ -158,40 +202,92 @@ public class TeacherServiceImpl implements TeacherService {
         String id = yun.getId();
         String key = yun.getKey();
         map.put(teacherid, true);
-        String path = "/opt/SmartClassRoom/11/" + teacherid + clazzname + ".mp4";
-        new Thread(() -> {
-            try {
-                record(teacherid, path);
-                ArrayList<String> video = upload(path);
-                long taskId = request(video.get(1));
-                response(clazzname, taskId);
-                synthesis(teacherid, clazzname, path);
-                deleteVideo(video.get(0));
-                video = upload("/opt/SmartClassRoom/11/" + clazzname + ".mp4");
-                File file = new File(path);
-                file.delete();
-                File file1 = new File("/opt/SmartClassRoom/11/" + clazzname + ".srt");
-                file1.delete();
-                File file2 = new File("/opt/SmartClassRoom/11/" + clazzname + ".mp4");
-                file2.delete();
-                //远程调用保存Video信息
-                Video video1 = new Video();
-                video1.setId(Long.parseLong(video.get(0)));
-                video1.setUrl(teacherid);
-                video1.setUrl(video.get(1));
-                video1.setVideoname(clazzname);
-                videoClient.SaveVideo(video1);
-            } catch (MyException e) {
-                log.error(e.getMessage());
-                throw new RuntimeException(e);
-            }
-        }).start();
+//        String path = "/opt/SmartClassRoom/11/" + teacherid + clazzname + ".mp4";
+//        new Thread(() -> {
+//            try {
+//                record(teacherid, path);
+//                ArrayList<String> video = upload(path);
+//                long taskId = request(video.get(1));
+//                response(clazzname, taskId);
+//                synthesis(teacherid, clazzname, path);
+//                deleteVideo(video.get(0));
+//                video = upload("/opt/SmartClassRoom/11/" + clazzname + ".mp4");
+//                File file = new File(path);
+//                file.delete();
+//                File file1 = new File("/opt/SmartClassRoom/11/" + clazzname + ".srt");
+//                file1.delete();
+//                File file2 = new File("/opt/SmartClassRoom/11/" + clazzname + ".mp4");
+//                file2.delete();
+//                //远程调用保存Video信息
+//                Video video1 = new Video();
+//                video1.setId(Long.parseLong(video.get(0)));
+//                video1.setUrl(teacherid);
+//                video1.setUrl(video.get(1));
+//                video1.setVideoname(clazzname);
+//                videoClient.SaveVideo(video1);
+//            } catch (MyException e) {
+//                log.error(e.getMessage());
+//                throw new RuntimeException(e);
+//            }
+//        }).start();
 
     }
 
     @Override
-    public void finishClazz(String teacherid) {
+    public void finishClazz(String teacherid, MultipartFile video, String className, String courseName, String startTime, String endTime) {
+        ClassRecord classRecord = new ClassRecord();
+        classRecord.setTeacherId(teacherid);
+        classRecord.setClassName(courseName);
+        classRecord.setClazz(className);
+        classRecord.setStartTime(LocalDateTime.parse(startTime));
+        classRecord.setEndTime(LocalDateTime.parse(endTime));
+        Duration duration = Duration.between(LocalTime.parse(startTime), LocalTime.parse(endTime));
+        // 如果开始时间在结束时间之后（例如跨午夜的情况），调整duration
+        if (duration.isNegative()) {
+            duration = duration.plusDays(1);
+        }
+        // 转换为总秒数，然后获取小时和分钟
+        long hours = duration.toHours();
+        long minutes = duration.toMinutes() % 60;
+        classRecord.setDuration(LocalTime.parse(String.format("%02d:%02d", hours, minutes)));
+
+        try {
+            String path = "videoFile\\" + teacherid + ".mp4";
+            saveFile(video, path);
+            upload("videoFile" + teacherid + ".mp4");
+            deleteFile(path);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+
         map.put(teacherid, false);
+
+    }
+
+    private void saveFile(MultipartFile file, String path) throws IOException {
+        File destFile = new File(path);
+        File parentDir = destFile.getParentFile();
+
+        if (!parentDir.exists()) {
+            parentDir.mkdirs(); // 创建必要的父目录
+        }
+
+        // 使用NIO保存文件
+        Files.copy(file.getInputStream(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    @Override
+    public List<ClassRecord> getClassRecord(String teacherid, int pageNumber) {
+        IPage<ClassRecord> page = new Page<>(pageNumber, 10); // 当前页1，每页10条
+        LambdaUpdateWrapper<ClassRecord> queryWrapper = new LambdaUpdateWrapper<>();
+        queryWrapper.eq(ClassRecord::getTeacherId, teacherid);
+        IPage<ClassRecord> userPage = classRecordMapper.selectPage(page, queryWrapper);
+        return (List<ClassRecord>) userPage.getRecords(); // 获取当前页数据
+    }
+
+    @Override
+    public void insertClassRecord(String teacherid, ClassRecord classRecord) {
+
     }
 
 
