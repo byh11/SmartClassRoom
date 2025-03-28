@@ -2,7 +2,6 @@ package com.teacher.contorller;
 
 
 import com.teacher.client.VideoClient;
-import com.teacher.entity.ClassRecord;
 import com.teacher.entity.Teacher;
 import com.teacher.entity.Video;
 import com.teacher.service.TeacherServiceImpl;
@@ -34,8 +33,8 @@ public class TeacherController {
         Video video = new Video();
         video.setTeacherid("1");
         video.setUrl("1");
-        video.setVideoname("1");
-        video.setId(1L);
+        video.setVideoName("1");
+        video.setVideoid(1L);
         videoClient.SaveVideo(video);
         return Result.success("测试成功");
     }
@@ -79,7 +78,7 @@ public class TeacherController {
 
     @GetMapping("/{teacherid}/info")
     @ResponseBody
-    public Result<?> getStudentInfo(@PathVariable String teacherid) {
+    public Result<?> getTeacherInfo(@PathVariable String teacherid) {
         try {
             Teacher result = teacherService.getTeacherInfo(teacherid);
             return Result.success(result);
@@ -119,11 +118,11 @@ public class TeacherController {
         return Result.success("下课成功");
     }
 
-    @RequestMapping(value = "/{teacherid}/class/records", method = RequestMethod.POST)
+    @RequestMapping(value = "/{teacherid}/video", method = RequestMethod.GET)
     @ResponseBody
-    public Result<?> records(@PathVariable String teacherid, @RequestParam("pageNumber") int pageNumber) throws MyException {
+    public Result<?> records(@PathVariable String teacherid) throws MyException {
         try {
-            List<ClassRecord> result = teacherService.getClassRecord(teacherid, pageNumber);
+            List<?> result = teacherService.getVideos(teacherid);
             return Result.success(result);
         } catch (Exception e) {
             return Result.error(e.getMessage());

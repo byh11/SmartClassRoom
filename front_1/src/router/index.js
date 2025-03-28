@@ -1,5 +1,6 @@
 import {createRouter, createWebHistory} from 'vue-router'
 import {useStore} from 'vuex'
+import VideoDetail from '@/views/VideoDetail.vue'
 
 const routes = [
     {
@@ -20,7 +21,7 @@ const routes = [
     {
         path: '/video/:id',
         name: 'VideoDetail',
-        component: () => import('@/views/VideoDetail.vue'),
+        component: VideoDetail,
         meta: {requiresAuth: true}
     },
     {

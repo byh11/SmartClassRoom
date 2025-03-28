@@ -1,164 +1,99 @@
 <template>
-  <div class="video-card" @click="handleClick">
+  <div v-if="isValid" class="video-card" @click="handleClick">
     <!-- 视频封面 -->
     <div class="video-cover">
       <el-image
-          :preview-src-list="[video.coverUrl]"
+          v-if="video.coverUrl"
           :src="video.coverUrl"
           fit="cover"
-          loading="lazy"
-      >
-        <template #error>
-          <div class="image-placeholder">
-            <el-icon>
-              <Picture/>
-            </el-icon>
-          </div>
-        </template>
-      </el-image>
-
-      <!-- 视频时长 -->
-      <span class="video-duration">{{ formatDuration(video.duration) }}</span>
-
-      <!-- 播放量 -->
-      <div class="video-stats">
-        <span class="views">
-          <el-icon><View/></el-icon>
-          {{ formatNumber(video.views) }}
-        </span>
+          @error="handleImageError"
+      />
+      <el-image
+          v-else
+          :src="defaultCover"
+          fit="cover"
+      />
+      <div class="play-button">
+        <el-icon>
+          <VideoPlay/>
+        </el-icon>
       </div>
+      <span class="duration">{{ video.duration }}</span>
     </div>
 
     <!-- 视频信息 -->
     <div class="video-info">
-      <h3 :title="video.title" class="video-title">{{ video.title }}</h3>
-
-      <div class="video-meta">
-        <div class="author">
-          <el-avatar
-              :size="24"
-              :src="video.teacher.avatar"
-          />
-          <span>{{ video.teacher.name }}</span>
+      <h3 class="title">{{ video.videoidName }}</h3>
+      <div class="meta">
+        <div class="teacher-info">
+          <el-avatar :size="24" :src="video.teacherAvatar || defaultAvatar"/>
+          <span class="teacher-name">{{ video.teacherName }}</span>
         </div>
-
         <div class="stats">
+          <span class="views">
+            <el-icon><View/></el-icon>
+            {{ formatNumber(video.views) }}
+          </span>
           <span class="likes">
             <el-icon><Star/></el-icon>
-            {{ formatNumber(video.likes) }}
-          </span>
-          <span class="comments">
-            <el-icon><ChatDotRound/></el-icon>
-            {{ formatNumber(video.comments) }}
+            {{ formatNumber(video.likeNum) }}
           </span>
         </div>
       </div>
-
-      <p v-if="showDescription" class="video-desc">{{ video.description }}</p>
-    </div>
-
-    <!-- 操作按钮 -->
-    <div v-if="showActions" class="video-actions">
-      <el-button-group>
-        <el-button
-            link
-            type="primary"
-            @click.stop="handlePlay"
-        >
-          播放
-        </el-button>
-        <el-button
-            link
-            type="primary"
-            @click.stop="handleCollect"
-        >
-          {{ video.isCollected ? '取消收藏' : '收藏' }}
-        </el-button>
-      </el-button-group>
+      <p class="description">{{ video.description }}</p>
+      <div class="tags">
+        <el-tag v-if="video.videoType" size="small">{{ video.videoType }}</el-tag>
+        <el-tag v-if="video.className" size="small" type="success">{{ video.className }}</el-tag>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import {computed} from 'vue'
-import {useRouter} from 'vue-router'
-import {useStore} from 'vuex'
-import {ElMessage} from 'element-plus'
-import {formatDuration, formatNumber} from '@/utils/format'
-import api from '@/api'
+import {Star, VideoPlay, View} from '@element-plus/icons-vue'
+import {formatNumber} from '@/utils/format'
 
 const props = defineProps({
   video: {
     type: Object,
     required: true,
     default: () => ({
-      title: '',
+      videoid: '',
+      videoidName: '',
       coverUrl: '',
-      duration: 0,
+      duration: '',
       views: 0,
-      likes: 0,
-      comments: 0,
-      teacher: {
-        name: '',
-        avatar: ''
-      }
+      likeNum: 0,
+      collectNum: 0,
+      teacherName: '',
+      teacherAvatar: '',
+      description: '',
+      videoType: '',
+      className: '',
+      startTime: '',
+      endTime: ''
     })
-  },
-  showDescription: {
-    type: Boolean,
-    default: false
-  },
-  showActions: {
-    type: Boolean,
-    default: true
   }
 })
 
-const router = useRouter()
-const store = useStore()
+const defaultCover = 'https://via.placeholder.com/300x200'
+const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
 
-// 处理视频点击
+const isValid = computed(() => {
+  return props.video && props.video.videoid
+})
+
 const handleClick = () => {
-  if (!store.state.user.isLoggedIn) {
-    router.push('/login')
-    return
-  }
-  router.push(`/video/${props.video.id}`)
+  emit('click', props.video)
 }
 
-// 处理播放按钮点击
-const handlePlay = () => {
-  if (!store.state.user.isLoggedIn) {
-    router.push('/login')
-    return
-  }
-  router.push(`/video/${props.video.id}`)
+const handleImageError = () => {
+  // 图片加载失败时使用默认图片
+  props.video.coverUrl = defaultCover
 }
 
-// 处理收藏按钮点击
-const handleCollect = async () => {
-  if (!store.state.user.isLoggedIn) {
-    router.push('/login')
-    return
-  }
-
-  try {
-    if (props.video.isCollected) {
-      await api.uncollectVideo(props.video.id)
-      ElMessage.success('取消收藏成功')
-    } else {
-      await api.collectVideo(props.video.id)
-      ElMessage.success('收藏成功')
-    }
-    // 触发父组件更新
-    emit('update')
-  } catch (error) {
-    ElMessage.error(props.video.isCollected ? '取消收藏失败' : '收藏失败')
-  }
-}
-
-// 发出的事件
-const emit = defineEmits(['update'])
+const emit = defineEmits(['click'])
 </script>
 
 <style scoped>
@@ -204,6 +139,17 @@ const emit = defineEmits(['update'])
 .video-duration {
   position: absolute;
   bottom: 8px;
+  right: 8px;
+  padding: 2px 6px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.video-type {
+  position: absolute;
+  top: 8px;
   right: 8px;
   padding: 2px 6px;
   background: rgba(0, 0, 0, 0.7);
@@ -285,10 +231,29 @@ const emit = defineEmits(['update'])
   -webkit-box-orient: vertical;
 }
 
+.course-info {
+  margin-top: 8px;
+}
+
 .video-actions {
   padding: 8px 12px;
   border-top: 1px solid #ebeef5;
   display: flex;
   justify-content: flex-end;
+  gap: 8px;
+}
+
+.play-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style> 

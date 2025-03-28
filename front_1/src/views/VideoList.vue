@@ -43,7 +43,7 @@
     <el-row :gutter="20">
       <el-col
           v-for="video in videoList"
-          :key="video.id"
+          :key="video.videoid"
           :lg="6"
           :md="8"
           :sm="12"
@@ -51,7 +51,7 @@
       >
         <VideoCard
             :video="video"
-            @click="handleVideoClick(video)"
+            @click="handlePlay(video)"
         />
       </el-col>
     </el-row>
@@ -68,14 +68,14 @@
 
     <!-- 无数据提示 -->
     <el-empty
-        v-if="videoList.length === 0 && !loading"
+        v-if="!loading && (!videoList || videoList.length === 0)"
         description="暂无视频"
     />
   </div>
 </template>
 
 <script setup>
-import {ref, reactive, onMounted} from 'vue'
+import {onMounted, reactive, ref} from 'vue'
 import {useRouter} from 'vue-router'
 import {useStore} from 'vuex'
 import {ElMessage} from 'element-plus'
@@ -99,37 +99,51 @@ const filters = reactive({
 
 const categories = [
   {label: '全部课程', value: ''},
-  {label: '计算机科学', value: 'cs'},
-  {label: '软件工程', value: 'se'},
-  {label: '数据科学', value: 'ds'}
+  {label: '计算机科学', value: '计算机科学'},
+  {label: '软件工程', value: '软件工程'},
+  {label: '数据科学', value: '数据科学'}
 ]
 
 // 获取视频列表
 const fetchVideos = async () => {
   loading.value = true
   try {
-    // 模拟数据
-    const mockData = Array(pageSize).fill(null).map((_, index) => ({
-      id: page.value * pageSize + index,
-      title: `示例视频 ${page.value * pageSize + index}`,
-      coverUrl: 'https://via.placeholder.com/300x200',
-      duration: 300,
-      views: 1000,
-      likes: 100,
-      comments: 50,
-      teacher: {
-        name: '示例教师',
-        avatar: 'https://via.placeholder.com/40'
-      }
-    }))
-
-    if (page.value === 1) {
-      videoList.value = mockData
-    } else {
-      videoList.value = [...videoList.value, ...mockData]
+    const params = {
+      pageNumber: page.value,
+      pageSize: pageSize,
+      videoidName: searchQuery.value,
+      type: filters.category,
+      orderBy: filters.sort
     }
+    const res = await api.getVideoList(params)
+    if (res.data.code === 200) {
+      // 转换数据格式以适配 VideoCard 组件
+      const formattedVideos = res.data.data.map(video => ({
+        videoid: video.videoid,
+        videoidName: video.videoName,
+        coverUrl: video.url, // 这里可能需要从视频URL生成封面图
+        duration: video.duration,
+        views: parseInt(video.views), // 后端没有提供播放次数，暂时设为0
+        likeNum: parseInt(video.likeNum),
+        collectNum: parseInt(video.collectNum),
+        teacherName: video.teacherName, // 这里可能需要根据teacherid获取教师信息
+        teacherAvatar: '', // 这里可能需要根据teacherid获取教师头像
+        description: video.videoText,
+        videoType: video.videoType,
+        className: video.className,
+        startTime: video.startTime,
+        endTime: video.endTime
+      }))
 
-    hasMore.value = page.value < 3 // 模拟只有3页数据
+      if (page.value === 1) {
+        videoList.value = formattedVideos
+      } else {
+        videoList.value = [...videoList.value, ...formattedVideos]
+      }
+      hasMore.value = formattedVideos.length === pageSize
+    } else {
+      ElMessage.error(res.data.message || '获取视频列表失败')
+    }
   } catch (error) {
     console.error('获取视频列表失败:', error)
     ElMessage.error('获取视频列表失败')
@@ -148,13 +162,32 @@ const loadMore = () => {
   fetchVideos()
 }
 
-const handleVideoClick = (video) => {
+const handlePlay = async (video) => {
   if (!store.state.user.isLoggedIn) {
-    ElMessage.warning('请先登录')
     router.push('/login')
     return
   }
-  router.push(`/video/${video.id}`)
+
+  try {
+    // 添加播放记录
+    await api.addPlayRecord(video.videoid).then(res => {
+      if (res.data.code === 200) {
+        console.log('添加播放记录成功')
+      } else {
+        console.error('添加播放记录失败:', res.data.message)
+      }
+    }).catch(error => {
+      console.error('添加播放记录失败:', error)
+    })
+    // 跳转到视频详情页
+    router.push({
+      path: `/video/${video.videoid}`,
+      query: {autoplay: 'true'}
+    })
+  } catch (error) {
+    console.error('添加播放记录失败:', error)
+    ElMessage.error('播放失败，请重试')
+  }
 }
 
 onMounted(() => {

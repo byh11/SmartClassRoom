@@ -51,7 +51,7 @@
             </div>
             <VideoCard
                 v-for="video in popularVideos"
-                :key="video.id"
+                :key="video.videoid"
                 :video="video"
                 @click="watchVideo(video)"
             />
@@ -76,20 +76,20 @@ const store = useStore()
 const carouselData = ref([
   {
     id: 1,
-    title: '2023年度教学成果展示',
-    image: 'https://via.placeholder.com/1200x400',
+    title: '2025年度教学成果展示',
+    image: 'https://tse1-mm.cn.bing.net/th/id/OIP-C.0vYuN7Pt8V6rlgjHgjrx5QHaFj?w=233&h=180&c=7&r=0&o=5&pid=1.7',
     videoId: '1'
   },
   {
     id: 2,
     title: '智慧课堂应用实践',
-    image: 'https://via.placeholder.com/1200x400',
+    image: 'https://tse3-mm.cn.bing.net/th/id/OIP-C.SzJOVTBQneYAgfarjFH9nAHaFC?w=222&h=180&c=7&r=0&o=5&pid=1.7',
     videoId: '2'
   },
   {
     id: 3,
     title: '在线教育创新发展',
-    image: 'https://via.placeholder.com/1200x400',
+    image: 'https://tse2-mm.cn.bing.net/th/id/OIP-C.vm-izF8HO7DncE6sHNUxDQAAAA?rs=1&pid=ImgDetMain',
     videoId: '3'
   }
 ])
@@ -124,30 +124,26 @@ const techData = ref([
 
 const popularVideos = ref([
   {
-    id: 1,
-    title: '计算机网络基础教程',
-    coverUrl: 'https://via.placeholder.com/300x200',
+    videoid: 1,
+    videoidName: '计算机网络基础教程',
+    coverUrl: 'https://th.bing.com/th?&id=OVP.wSwCT0VUYwTucEz9TBtuBgIIFF&w=326&h=183&c=7&pid=2.1&rs=1',
     duration: 3600,
     views: 1500,
-    likes: 120,
-    comments: 30,
-    teacher: {
-      name: '张教授',
-      avatar: 'https://via.placeholder.com/40'
-    }
+    likeNum: 120,
+    collectNum: 30,
+    teacherName: '张教授',
+    teacherAvatar: 'https://via.placeholder.com/40'
   },
   {
-    id: 2,
-    title: 'Python程序设计入门',
-    coverUrl: 'https://via.placeholder.com/300x200',
+    videoid: 2,
+    videoidName: 'Python程序设计入门',
+    coverUrl: 'https://th.bing.com/th?&id=OVP.tnkFppy-gHnHoioANSnBgwIIGG&w=326&h=183&c=7&pid=2.1&rs=1',
     duration: 2700,
     views: 1200,
-    likes: 100,
-    comments: 25,
-    teacher: {
-      name: '李老师',
-      avatar: 'https://via.placeholder.com/40'
-    }
+    likeNum: 100,
+    collectNum: 25,
+    teacherName: '李老师',
+    teacherAvatar: 'https://via.placeholder.com/40'
   }
 ])
 
@@ -169,18 +165,25 @@ const watchVideo = (item) => {
 
 .carousel {
   margin-bottom: 30px;
+  background: #f5f5f5;
 }
 
 .carousel-content {
   height: 100%;
   cursor: pointer;
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f5f5f5;
+  overflow: hidden;
 }
 
 .carousel-content img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .carousel-info {
@@ -191,6 +194,7 @@ const watchVideo = (item) => {
   padding: 20px;
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
   color: white;
+  z-index: 1;
 }
 
 .container {

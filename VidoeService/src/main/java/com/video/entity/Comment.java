@@ -13,12 +13,8 @@ import lombok.NoArgsConstructor;
 public class Comment {
     @TableId("commentid")
     private long commentid;
-    @TableId("videoid")
     private long videoid;
-    @TableId("userid")
     private String userid;
-    @TableId("content")
     private String content;
-    @TableId("parentid")
     private String parentid;
 }

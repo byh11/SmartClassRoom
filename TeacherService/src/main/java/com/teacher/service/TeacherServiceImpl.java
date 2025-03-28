@@ -2,17 +2,14 @@ package com.teacher.service;
 
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import com.qcloud.vod.VodUploadClient;
 import com.qcloud.vod.model.VodUploadRequest;
 import com.qcloud.vod.model.VodUploadResponse;
 import com.teacher.client.VideoClient;
 import com.teacher.config.Yun;
-import com.teacher.entity.ClassRecord;
 import com.teacher.entity.Teacher;
-import com.teacher.mapper.ClassRecordMapper;
+import com.teacher.entity.Video;
 import com.teacher.mapper.TeacherMapper;
 import com.teacher.service.service.TeacherService;
 import com.tencentcloudapi.asr.v20190614.AsrClient;
@@ -42,6 +39,8 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,9 +63,6 @@ public class TeacherServiceImpl implements TeacherService {
 
     @Autowired
     private VideoClient videoClient;
-
-    @Autowired
-    private ClassRecordMapper classRecordMapper;
 
     private ConcurrentHashMap<String, Boolean> map = new ConcurrentHashMap<>();
 
@@ -235,13 +231,23 @@ public class TeacherServiceImpl implements TeacherService {
 
     @Override
     public void finishClazz(String teacherid, MultipartFile video, String className, String courseName, String startTime, String endTime) {
-        ClassRecord classRecord = new ClassRecord();
-        classRecord.setTeacherId(teacherid);
-        classRecord.setClassName(courseName);
-        classRecord.setClazz(className);
-        classRecord.setStartTime(LocalDateTime.parse(startTime));
-        classRecord.setEndTime(LocalDateTime.parse(endTime));
-        Duration duration = Duration.between(LocalTime.parse(startTime), LocalTime.parse(endTime));
+        Video video1 = new Video();
+        video1.setTeacherid(teacherid);
+        video1.setClassName(courseName);
+        video1.setClassName(className);
+        OffsetDateTime offsetDateTime = OffsetDateTime.parse(
+                startTime,
+                DateTimeFormatter.ISO_OFFSET_DATE_TIME
+        );
+        LocalDateTime startLocalDateTime = offsetDateTime.toLocalDateTime();
+        video1.setStartTime(startLocalDateTime);
+        offsetDateTime = OffsetDateTime.parse(
+                endTime,
+                DateTimeFormatter.ISO_OFFSET_DATE_TIME
+        );
+        LocalDateTime endLocalDateTime = offsetDateTime.toLocalDateTime();
+        video1.setEndTime(endLocalDateTime);
+        Duration duration = Duration.between(startLocalDateTime, endLocalDateTime);
         // 如果开始时间在结束时间之后（例如跨午夜的情况），调整duration
         if (duration.isNegative()) {
             duration = duration.plusDays(1);
@@ -249,17 +255,50 @@ public class TeacherServiceImpl implements TeacherService {
         // 转换为总秒数，然后获取小时和分钟
         long hours = duration.toHours();
         long minutes = duration.toMinutes() % 60;
-        classRecord.setDuration(LocalTime.parse(String.format("%02d:%02d", hours, minutes)));
+        long seconds = duration.getSeconds() % 60;
+        video1.setDuration(LocalTime.parse(String.format("%02d:%02d:%02d", hours, minutes, seconds)));
 
+        String pathVideo = "C:\\videoFile\\" + teacherid + "_" + courseName + ".mp4";
+        String pathSrt = "C:\\videoFile\\" + courseName + ".srt";
+        String pathSrtVideo = "C:\\videoFile\\" + courseName + ".mp4";
         try {
-            String path = "videoFile\\" + teacherid + ".mp4";
-            saveFile(video, path);
-            upload("videoFile" + teacherid + ".mp4");
-            deleteFile(path);
+            saveFile(video, pathVideo);
+            ArrayList<String> videoInfo = upload(pathVideo);
+            String videourl = videoInfo.get(1);
+            String videoId = videoInfo.get(0);
+            String coverUrl = videoInfo.get(2);
+            //字幕处理相关
+//            long taskId = request(videourl);
+//            response(courseName, taskId, pathSrt);
+//            synthesis(teacherid, courseName, pathVideo,pathSrt,pathSrtVideo);
+//            deleteVideo(videoId);
+//            videoInfo = upload(pathSrtVideo);
+//            videourl = videoInfo.get(1);
+//            videoId = videoInfo.get(0);
+
+            // 视频信息表
+
+            video1.setVideoid(Long.parseLong(videoId));
+            video1.setUrl(teacherid);
+
+            video1.setCoverUrl(coverUrl);
+            video1.setUrl(videourl);
+            video1.setVideoName(courseName);
+            video1.setTeacherid(teacherid);
+            video1.setStatus(1);
+            videoClient.SaveVideo(video1);
+
         } catch (Exception e) {
             log.error(e.getMessage());
+        } finally {
+//            try {
+//                deleteFile(pathVideo);
+//                deleteFile(pathSrt);
+//                deleteFile(pathSrtVideo);
+//            } catch (IOException e) {
+//                log.info("文件删除失败");
+//            }
         }
-
         map.put(teacherid, false);
 
     }
@@ -277,17 +316,8 @@ public class TeacherServiceImpl implements TeacherService {
     }
 
     @Override
-    public List<ClassRecord> getClassRecord(String teacherid, int pageNumber) {
-        IPage<ClassRecord> page = new Page<>(pageNumber, 10); // 当前页1，每页10条
-        LambdaUpdateWrapper<ClassRecord> queryWrapper = new LambdaUpdateWrapper<>();
-        queryWrapper.eq(ClassRecord::getTeacherId, teacherid);
-        IPage<ClassRecord> userPage = classRecordMapper.selectPage(page, queryWrapper);
-        return (List<ClassRecord>) userPage.getRecords(); // 获取当前页数据
-    }
-
-    @Override
-    public void insertClassRecord(String teacherid, ClassRecord classRecord) {
-
+    public List<?> getVideos(String teacherid) {
+        return videoClient.SelectVideoByTeacher(teacherid).getData();
     }
 
 
@@ -348,11 +378,13 @@ public class TeacherServiceImpl implements TeacherService {
         VodUploadClient client = new VodUploadClient(yun.getId(), yun.getKey());
         VodUploadRequest request = new VodUploadRequest();
         request.setMediaFilePath(path);
+        request.setCoverFilePath("img/log.png");
         ArrayList<String> video = new ArrayList<>();
         try {
             VodUploadResponse response = client.upload("ap-guangzhou", request);
             video.add(response.getFileId());
             video.add(response.getMediaUrl());
+            video.add(response.getCoverUrl());
             log.info("视频保存成功");
             log.info("视频ID为：" + video.get(0));
             log.info("视频路径为：" + video.get(1));
@@ -399,7 +431,7 @@ public class TeacherServiceImpl implements TeacherService {
         return taskId;
     }
 
-    public void response(String classname, long taskId) {
+    public void response(String classname, long taskId, String pathSrt) {
         //获取字幕信息并且保存字幕文件
         try {
             Thread.sleep(10000);
@@ -483,7 +515,7 @@ public class TeacherServiceImpl implements TeacherService {
                 time += "\n";
                 time += resp.getData().getResultDetail()[i].getFinalSentence() + "\n";
             }
-            File file = new File("/opt/SmartClassRoom/11/" + classname + ".srt");
+            File file = new File(pathSrt);
             try {
                 FileWriter fw = new FileWriter(file);
                 fw.write(time);
@@ -498,11 +530,11 @@ public class TeacherServiceImpl implements TeacherService {
         }
     }
 
-    public void synthesis(String teacherid, String classname, String path) {
-        String videoFile = path; // 视频文件路径
-        String subtitlesFile = "/opt/SmartClassRoom/11/" + classname + ".srt"; // 字幕文件路径
-        String outputVideoFile = "/opt/SmartClassRoom/11/" + classname + ".mp4"; // 输出视频文件路径
-        String ffmpegCommand = "ffmpeg -i " + videoFile + " -vf subtitles=" + subtitlesFile + " " + outputVideoFile;
+    public void synthesis(String teacherid, String classname, String pathVideo, String pathStr, String pathStrVdieo) {
+//        String videoFile = pathVideo; // 视频文件路径
+//        String subtitlesFile = "/opt/SmartClassRoom/11/" + classname + ".srt"; // 字幕文件路径
+//        String outputVideoFile = "/opt/SmartClassRoom/11/" + classname + ".mp4"; // 输出视频文件路径
+        String ffmpegCommand = "ffmpeg -y -i " + pathVideo + " -vf subtitles=" + pathStr + " " + pathStrVdieo;
 
         try {
             Process process = Runtime.getRuntime().exec(ffmpegCommand);

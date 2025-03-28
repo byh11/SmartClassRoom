@@ -1,7 +1,6 @@
 package com.teacher.service.service;
 
 
-import com.teacher.entity.ClassRecord;
 import com.teacher.entity.Teacher;
 import org.com.execption.MyException;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,7 +22,5 @@ public interface TeacherService {
 
     void finishClazz(String teacherid, MultipartFile video, String className, String courseName, String startTime, String endTime);
 
-    List<ClassRecord> getClassRecord(String teacherid, int pageNumber);
-
-    void insertClassRecord(String teacherid, ClassRecord classRecord);
+    List<?> getVideos(String teacherid);
 }
