@@ -4,12 +4,12 @@ server:
 # 数据库配置
 spring:
   datasource:
-    url: jdbc:mysql://1.94.170.182:3306/smartclassroom?useAffectedRows=true
-    username: root
-    password: root
+    url: jdbc:mysql://1.94.170.182:16033/smartclassroom?useAffectedRows=true
+    username: byh
+    password: byh2001..@
   redis:
     host: 1.94.170.182
-    port: 6379
+    port: 19736
     password: byh2001..@
   cloud:
     nacos:

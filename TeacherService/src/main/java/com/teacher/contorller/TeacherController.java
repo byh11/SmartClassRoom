@@ -128,4 +128,15 @@ public class TeacherController {
             return Result.error(e.getMessage());
         }
     }
+
+    @RequestMapping(value = "/{teacherid}/avatar", method = RequestMethod.POST)
+    @ResponseBody
+    public Result<?> avatarUpload(@PathVariable String teacherid, @RequestPart("file") MultipartFile file) throws MyException {
+        try {
+            String url = teacherService.avatarUpload(teacherid, file);
+            return Result.success(url);
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
 }

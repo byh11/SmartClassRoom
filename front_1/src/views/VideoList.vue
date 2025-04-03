@@ -121,13 +121,13 @@ const fetchVideos = async () => {
       const formattedVideos = res.data.data.map(video => ({
         videoid: video.videoid,
         videoidName: video.videoName,
-        coverUrl: video.url, // 这里可能需要从视频URL生成封面图
+        coverUrl: video.coverUrl, // 这里可能需要从视频URL生成封面图
         duration: video.duration,
         views: parseInt(video.views), // 后端没有提供播放次数，暂时设为0
         likeNum: parseInt(video.likeNum),
         collectNum: parseInt(video.collectNum),
         teacherName: video.teacherName, // 这里可能需要根据teacherid获取教师信息
-        teacherAvatar: '', // 这里可能需要根据teacherid获取教师头像
+        teacherAvatar: video.teacherAvatar, // 这里可能需要根据teacherid获取教师头像
         description: video.videoText,
         videoType: video.videoType,
         className: video.className,

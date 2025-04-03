@@ -94,7 +94,9 @@
                 placeholder="写下你的评论..."
                 show-word-limit
             />
-            <el-button type="primary" @click="handleComment">发表评论</el-button>
+            <div class="comment-submit">
+              <el-button type="primary" @click="handleComment">发表评论</el-button>
+            </div>
           </div>
           <div class="comment-list">
             <div v-if="comments.length === 0" class="no-comments">
@@ -102,7 +104,7 @@
             </div>
             <div v-else class="comment-items">
               <div v-for="comment in comments" :key="comment.id" class="comment-item">
-                <el-avatar :src="defaultAvatar"/>
+                <el-avatar :src="comment.avatar"/>
                 <div class="comment-content">
                   <div class="comment-header">
                     <span class="username">{{ comment.username }}</span>
@@ -120,12 +122,6 @@
                   </div>
                   <p class="text">{{ comment.content }}</p>
                   <div class="actions">
-                    <el-button type="text" @click="handleLike(comment)">
-                      <el-icon>
-                        <StarFilled/>
-                      </el-icon>
-                      {{ comment.likes }}
-                    </el-button>
                     <el-button type="text" @click="handleReply(comment)">
                       回复
                     </el-button>
@@ -171,7 +167,7 @@ import {onMounted, onUnmounted, ref} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {useStore} from 'vuex'
 import {ElMessage, ElMessageBox} from 'element-plus'
-import {ChatDotRound, Loading, Star, StarFilled, View, Warning} from '@element-plus/icons-vue'
+import {ChatDotRound, Loading, Star, View, Warning} from '@element-plus/icons-vue'
 import {formatNumber} from '@/utils/format'
 import api from '@/api'
 
@@ -332,27 +328,21 @@ const handleComment = async () => {
       content: newComment.value
     })
     if (response && response.data) {
-      comments.value.unshift(response.data)
+      // 修改这里：确保 response.data 包含完整的评论信息
+      const newCommentData = {
+        id: response.data.id,
+        userId: userid,
+        username: store.state.user.name,
+        content: newComment.value,
+        createTime: new Date().toISOString()
+      }
+      comments.value.unshift(newCommentData)
       newComment.value = ''
       ElMessage.success('评论成功')
     }
   } catch (error) {
+    console.error('评论失败:', error)
     ElMessage.error('评论失败')
-  }
-}
-
-// 处理评论点赞
-const handleLike = async (comment) => {
-  if (!store.state.user.isLoggedIn) {
-    router.push('/login')
-    return
-  }
-
-  try {
-    // 实现评论点赞逻辑
-    ElMessage.success('点赞成功')
-  } catch (error) {
-    ElMessage.error('点赞失败')
   }
 }
 
@@ -556,9 +546,9 @@ onUnmounted(() => {
   margin-bottom: 20px;
 }
 
-.comment-input .el-button {
+.comment-submit {
   margin-top: 10px;
-  float: right;
+  text-align: right;
 }
 
 .comment-list {
@@ -576,10 +566,12 @@ onUnmounted(() => {
   gap: 15px;
   padding: 15px 0;
   border-bottom: 1px solid #eee;
+  position: relative;
 }
 
 .comment-content {
   flex: 1;
+  padding-right: 60px;
 }
 
 .comment-header {
@@ -587,12 +579,16 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 5px;
+  position: relative;
 }
 
 .comment-actions {
   display: flex;
   align-items: center;
   gap: 10px;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 .username {

@@ -93,7 +93,7 @@
 </template>
 
 <script setup>
-import {ref, reactive} from 'vue'
+import {reactive, ref} from 'vue'
 import {useRouter} from 'vue-router'
 import {ElMessage} from 'element-plus'
 import api from '@/api'
@@ -144,7 +144,7 @@ const rules = reactive({
   ],
   userId: [
     {required: true, message: '请输入账号', trigger: 'blur'},
-    {min: 5, max: 20, message: '长度在 5 到 20 个字符', trigger: 'blur'}
+    {min: 5, max: 20, message: '长度在 5 到 20 个字符', trigger: 'blur'},
   ],
   password: [
     {required: true, validator: validatePass, trigger: 'blur'},
@@ -188,12 +188,24 @@ const handleRegister = async () => {
     await registerFormRef.value.validate()
     loading.value = true
 
+    // 创建提交数据的副本
+    const submitData = {...registerForm}
+
+    // 根据用户类型重命名 userId 字段
+    if (registerForm.userType === 'student') {
+      submitData.studentid = submitData.userId
+      delete submitData.userId
+    } else {
+      submitData.teacherid = submitData.userId
+      delete submitData.userId
+    }
+
     // 根据用户类型调用不同的注册接口
     const registerApi = registerForm.userType === 'student'
         ? api.studentRegister
         : api.teacherRegister
 
-    await registerApi(registerForm)
+    await registerApi(submitData)
 
     ElMessage.success('注册成功！')
     router.push('/login')

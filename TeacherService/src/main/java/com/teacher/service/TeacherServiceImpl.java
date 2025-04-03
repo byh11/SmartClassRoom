@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.qcloud.vod.VodUploadClient;
 import com.qcloud.vod.model.VodUploadRequest;
 import com.qcloud.vod.model.VodUploadResponse;
+import com.teacher.Util.COSUtil;
 import com.teacher.client.VideoClient;
 import com.teacher.config.Yun;
 import com.teacher.entity.Teacher;
@@ -63,6 +64,9 @@ public class TeacherServiceImpl implements TeacherService {
 
     @Autowired
     private VideoClient videoClient;
+
+    @Autowired
+    COSUtil cosUtil;
 
     private ConcurrentHashMap<String, Boolean> map = new ConcurrentHashMap<>();
 
@@ -320,6 +324,29 @@ public class TeacherServiceImpl implements TeacherService {
         return videoClient.SelectVideoByTeacher(teacherid).getData();
     }
 
+    @Override
+    public String avatarUpload(String teacherid, MultipartFile file) throws MyException {
+        String path = "C:\\videoFile\\" + teacherid + "_avatar.jpg";
+        try {
+            saveFile(file, path);
+            cosUtil.putObject("avatar/" + teacherid + "_avatar.jpg", path);
+            String url = cosUtil.getURL("avatar/" + teacherid + "_avatar.jpg");
+            Teacher teacher = teacherMapper.selectById(teacherid);
+            teacher.setAvatar(url);
+            teacherMapper.updateById(teacher);
+            redis.setKey(teacherid, gson.toJson(teacher));
+            return url;
+        } catch (IOException e) {
+            throw new MyException("文件保存失败");
+        } finally {
+            try {
+                deleteFile(path);
+            } catch (IOException e) {
+                throw new MyException("文件删除失败");
+            }
+        }
+    }
+
 
     public void deleteVideo(String id) throws MyException {
         try {
@@ -388,6 +415,7 @@ public class TeacherServiceImpl implements TeacherService {
             log.info("视频保存成功");
             log.info("视频ID为：" + video.get(0));
             log.info("视频路径为：" + video.get(1));
+            log.info("封面路径为：" + video.get(2));
         } catch (Exception e) {
             // 业务方进行异常处理
             throw new MyException("保存错误");

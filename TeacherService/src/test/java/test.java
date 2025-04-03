@@ -2,28 +2,19 @@ import com.google.gson.Gson;
 import com.qcloud.vod.VodUploadClient;
 import com.qcloud.vod.model.VodUploadRequest;
 import com.qcloud.vod.model.VodUploadResponse;
-import com.tencentcloudapi.vod.v20180717.VodClient;
-import com.tencentcloudapi.vod.v20180717.models.ApplyUploadRequest;
-import com.tencentcloudapi.vod.v20180717.models.ApplyUploadResponse;
-import com.tencentcloudapi.vod.v20180717.models.CommitUploadRequest;
-import com.tencentcloudapi.vod.v20180717.models.CommitUploadResponse;
-import org.bytedeco.javacv.*;
-import org.bytedeco.opencv.opencv_core.Mat;
-import org.bytedeco.opencv.opencv_videoio.VideoCapture;
-import org.com.execption.MyException;
-import org.junit.jupiter.api.Test;
-
-import javax.sound.sampled.*;
-import java.io.*;
-
+import com.teacher.Util.COSUtil;
+import com.tencentcloudapi.asr.v20190614.AsrClient;
+import com.tencentcloudapi.asr.v20190614.models.CreateRecTaskRequest;
+import com.tencentcloudapi.asr.v20190614.models.CreateRecTaskResponse;
+import com.tencentcloudapi.asr.v20190614.models.DescribeTaskStatusRequest;
+import com.tencentcloudapi.asr.v20190614.models.DescribeTaskStatusResponse;
 import com.tencentcloudapi.common.Credential;
+import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import com.tencentcloudapi.common.profile.ClientProfile;
 import com.tencentcloudapi.common.profile.HttpProfile;
-import com.tencentcloudapi.common.exception.TencentCloudSDKException;
-import com.tencentcloudapi.asr.v20190614.AsrClient;
-import com.tencentcloudapi.asr.v20190614.models.*;
-import org.opencv.video.Video;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.api.Test;
+
+import java.io.*;
 
 public class test {
 
@@ -398,6 +389,19 @@ public class test {
         }
 
 
+    }
+
+    @Test
+    public void a1() {
+        COSUtil cosUtil = new COSUtil();
+        String path = "C:\\videoFile\\a1.png";
+        cosUtil.putObject("avatar/test1.png", path);
+    }
+
+    @Test
+    public void a2() {
+        COSUtil cosUtil = new COSUtil();
+        System.out.println(cosUtil.getURL("avatar/test1.png"));
     }
 }
 

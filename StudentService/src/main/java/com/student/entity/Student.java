@@ -25,4 +25,5 @@ public class Student {
     private String sex;
     private String clazz;
     private String major;
+    private String avatar;
 }

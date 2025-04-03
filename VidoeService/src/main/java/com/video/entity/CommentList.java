@@ -4,10 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
+/**
+ * @author byh
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class VideoList extends Video {
-    private String teacherName;
-    private String teacherAvatar;
+public class CommentList extends Comment {
+    private String avatar;
 }

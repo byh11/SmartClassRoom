@@ -1,6 +1,7 @@
 package org.com.mapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -10,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class Redis {
     @Autowired
+    @Qualifier("myRedisTemplate")
     private RedisTemplate redisTemplate;
 
     public boolean isExist(String key) {
@@ -19,19 +21,19 @@ public class Redis {
 
     public void setKey(String key, String value) {
         // 使用RedisTemplate的opsForValue方法设置指定key的值
-        redisTemplate.opsForValue().set(key, value);
-
-        // 设置key的过期时间为15分钟
-        redisTemplate.expire(key, 60, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(key, value, 60 * 24, TimeUnit.MINUTES);
+//
+//        // 设置key的过期时间为15分钟
+//        redisTemplate.expire(key, 60, TimeUnit.MINUTES);
 
     }
 
     public void setKey(String key, String value, int expireTime) {
         // 使用RedisTemplate的opsForValue方法设置指定key的值
-        redisTemplate.opsForValue().set(key, value);
-
-        // 设置key的过期时间为expireTime秒
-        redisTemplate.expire(key, expireTime, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(key, value, expireTime, TimeUnit.MINUTES);
+//
+//        // 设置key的过期时间为expireTime秒
+//        redisTemplate.expire(key, expireTime, TimeUnit.MINUTES);
     }
 
     public String getKey(String username) {

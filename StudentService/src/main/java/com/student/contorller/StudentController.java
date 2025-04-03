@@ -8,6 +8,7 @@ import org.com.execption.MyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -83,4 +84,17 @@ public class StudentController {
             return Result.error(e.getMessage());
         }
     }
+
+    @RequestMapping(value = "/{studentid}/avatar", method = RequestMethod.POST)
+    @ResponseBody
+    public Result<?> avatarUpload(@PathVariable String studentid, @RequestPart("file") MultipartFile file) throws MyException {
+        try {
+            String url = studentService.avatarUpload(studentid, file);
+            return Result.success(url);
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
+
+
 }

@@ -28,9 +28,13 @@ public class AutoTaskService {
             String value = redis.getKey(key);
             String videoId = key.split(":")[1];
             if (value != null) {
-                Video video = videoMapper.selectById(videoId);
-                video.setViews(Long.valueOf(value));
-                videoMapper.updateById(video);
+                try {
+                    Video video = videoMapper.selectById(videoId);
+                    video.setViews(Long.valueOf(value));
+                    videoMapper.updateById(video);
+                } catch (Exception e) {
+                    log.error("同步播放数据失败");
+                }
             }
         }
         log.info("同步播放数据结束");

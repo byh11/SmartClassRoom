@@ -2,6 +2,7 @@ package com.student.service;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.gson.Gson;
+import com.student.Util.COSUtil;
 import com.student.entity.Student;
 import com.student.mapper.StudentMapper;
 import com.student.service.service.StudentService;
@@ -10,7 +11,12 @@ import org.com.mapper.Redis;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.sql.SQLException;
 
 @Service
@@ -24,6 +30,9 @@ public class StudentServiceImpl implements StudentService {
 
     @Autowired
     private Gson gson;
+
+    @Autowired
+    private COSUtil cosUtil;
 
     @Override
     public void register(Student student) throws MyException {
@@ -127,4 +136,59 @@ public class StudentServiceImpl implements StudentService {
         }
         return student;
     }
+
+    public static void deleteFile(String filePath) throws IOException {
+        // 创建代表目标文件的File对象
+        File fileToDelete = new File(filePath);
+
+        // 检查文件是否存在并且是一个文件（而不是目录）
+        if (fileToDelete.exists() && fileToDelete.isFile()) {
+            // 尝试删除文件
+            boolean isDeleted = fileToDelete.delete();
+
+            if (isDeleted) {
+                System.out.println("文件删除成功: " + filePath);
+            } else {
+                throw new IOException("未能删除文件: " + filePath);
+            }
+        } else {
+            throw new IOException("文件不存在或路径指向的是一个目录: " + filePath);
+        }
+    }
+
+    @Override
+    public String avatarUpload(String studentid, MultipartFile file) throws MyException {
+        String path = "C:\\videoFile\\" + studentid + "_avatar.jpg";
+        try {
+            saveFile(file, path);
+            cosUtil.putObject("avatar/" + studentid + "_avatar.jpg", path);
+            String url = cosUtil.getURL("avatar/" + studentid + "_avatar.jpg");
+            Student student = studentMapper.selectById(studentid);
+            student.setAvatar(url);
+            studentMapper.updateById(student);
+            redis.setKey(studentid, gson.toJson(student));
+            return url;
+        } catch (IOException e) {
+            throw new MyException("文件保存失败");
+        } finally {
+            try {
+                deleteFile(path);
+            } catch (IOException e) {
+                throw new MyException("文件删除失败");
+            }
+        }
+    }
+
+    private void saveFile(MultipartFile file, String path) throws IOException {
+        File destFile = new File(path);
+        File parentDir = destFile.getParentFile();
+
+        if (!parentDir.exists()) {
+            parentDir.mkdirs(); // 创建必要的父目录
+        }
+
+        // 使用NIO保存文件
+        Files.copy(file.getInputStream(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+    }
+
 }

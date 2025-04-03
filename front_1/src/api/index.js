@@ -62,19 +62,7 @@ const api = {
     // 学生注册
     studentRegister: async (data) => {
         try {
-            const response = await instance.post('/student/register', null, {
-                params: {
-                    studentid: data.userId,
-                    password: data.password,
-                    name: data.name,
-                    sex: data.sex,
-                    phone: data.phone,
-                    email: data.email,
-                    birthday: data.birthday,
-                    clazz: data.clazz,
-                    major: data.major
-                }
-            })
+            const response = await instance.post('/student/register', data)
             return handleResponse(response)
         } catch (error) {
             return handleError(error)
@@ -106,18 +94,7 @@ const api = {
     // 教师注册
     teacherRegister: async (data) => {
         try {
-            const response = await instance.post('/teacher/register', null, {
-                params: {
-                    teacherid: data.userId,
-                    password: data.password,
-                    name: data.name,
-                    sex: data.sex,
-                    phone: data.phone,
-                    email: data.email,
-                    birthday: data.birthday,
-                    college: data.college
-                }
-            })
+            const response = await instance.post('/teacher/register', data)
             return handleResponse(response)
         } catch (error) {
             return handleError(error)
@@ -271,6 +248,27 @@ const api = {
 
     // 添加播放记录
     addPlayRecord: (videoid) => instance.post(`/video/play/${videoid}`, null),
+
+    // 头像相关接口
+    updateStudentAvatar: (studentid, file) => {
+        const formData = new FormData()
+        formData.append('file', file)
+        return instance.post(`/student/${studentid}/avatar`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+    },
+
+    updateTeacherAvatar: (teacherid, file) => {
+        const formData = new FormData()
+        formData.append('file', file)
+        return instance.post(`/teacher/${teacherid}/avatar`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+    }
 }
 
 export default api 

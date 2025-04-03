@@ -17,10 +17,7 @@ import com.tencentcloudapi.vod.v20180717.models.DeleteMediaRequest;
 import com.tencentcloudapi.vod.v20180717.models.DeleteMediaResponse;
 import com.video.client.TeacherClient;
 import com.video.config.Yun;
-import com.video.entity.Comment;
-import com.video.entity.Teacher;
-import com.video.entity.Video;
-import com.video.entity.VideoList;
+import com.video.entity.*;
 import com.video.mapper.CommentMapper;
 import com.video.mapper.VideoMapper;
 import com.video.service.service.VideoService;
@@ -269,7 +266,7 @@ public class VideoServiceImpl implements VideoService {
             redis.incr(key);
         } else {
             Video video = videoMapper.selectOne(new QueryWrapper<Video>().eq("videoid", videoid));
-            redis.setKey(key, String.valueOf(video.getViews() + 1), 60 * 60 * 24);
+            redis.setKey(key, String.valueOf(video.getViews() + 1), 60 * 24);
         }
     }
 
@@ -280,7 +277,7 @@ public class VideoServiceImpl implements VideoService {
             redis.incr(key);
         } else {
             Video video = videoMapper.selectOne(new QueryWrapper<Video>().eq("videoid", videoid));
-            redis.setKey(key, String.valueOf(video.getLikeNum() + 1), 60 * 60 * 24);
+            redis.setKey(key, String.valueOf(video.getLikeNum() + 1), 60 * 24);
         }
     }
 
@@ -308,7 +305,7 @@ public class VideoServiceImpl implements VideoService {
             redis.incr(key);
         } else {
             Video video = videoMapper.selectOne(new QueryWrapper<Video>().eq("videoid", videoid));
-            redis.setKey(key, String.valueOf(video.getCollectNum() + 1), 60 * 60 * 24);
+            redis.setKey(key, String.valueOf(video.getCollectNum() + 1), 60 * 24);
         }
     }
 
@@ -335,6 +332,14 @@ public class VideoServiceImpl implements VideoService {
         wrapper.eq("videoid", videoid);
         List<Comment> comments = commentMapper.selectList(wrapper);
         return comments;
+    }
+
+    private CommentList commentAfterUpdateList(List<Comment> comments) {
+        return null;
+    }
+
+    private CommentList commentAfterUpdate(Comment comment) {
+        return null;
     }
 
     @Override
@@ -380,6 +385,7 @@ public class VideoServiceImpl implements VideoService {
         BeanUtils.copyProperties(video, video1);
         Result<Teacher> teacherInfo = teacherClient.getTeacherInfo(video.getTeacherid());
         video1.setTeacherName(teacherInfo.getData().getName());
+        video1.setTeacherAvatar(teacherInfo.getData().getAvatar());
         return video1;
     }
 

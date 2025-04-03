@@ -23,4 +23,5 @@ public class Teacher {
     private Date birthday;
     private String sex;
     private String college;
+    private String avatar;
 }

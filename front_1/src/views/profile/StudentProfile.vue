@@ -25,18 +25,33 @@
       >
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="学号" prop="studentid">
-              <el-input v-model="form.studentid" disabled/>
+            <el-form-item label="头像">
+              <div class="avatar-container">
+                <el-avatar :size="100" :src="form.avatar || defaultAvatar"/>
+                <el-upload
+                    v-if="isEditing"
+                    :before-upload="beforeAvatarUpload"
+                    :show-file-list="false"
+                    class="avatar-uploader"
+                >
+                  <el-button size="small" type="primary">更换头像</el-button>
+                </el-upload>
+              </div>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="姓名" prop="name">
-              <el-input v-model="form.name"/>
+            <el-form-item label="学号" prop="studentid">
+              <el-input v-model="form.studentid" disabled/>
             </el-form-item>
           </el-col>
         </el-row>
 
         <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="姓名" prop="name">
+              <el-input v-model="form.name"/>
+            </el-form-item>
+          </el-col>
           <el-col :span="12">
             <el-form-item label="性别" prop="sex">
               <el-select v-model="form.sex" placeholder="请选择性别" style="width: 100%">
@@ -45,6 +60,9 @@
               </el-select>
             </el-form-item>
           </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="生日" prop="birthday">
               <el-date-picker
@@ -56,27 +74,27 @@
               />
             </el-form-item>
           </el-col>
-        </el-row>
-
-        <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="手机号" prop="phone">
               <el-input v-model="form.phone"/>
             </el-form-item>
           </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="邮箱" prop="email">
               <el-input v-model="form.email"/>
             </el-form-item>
           </el-col>
-        </el-row>
-
-        <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="班级" prop="clazz">
               <el-input v-model="form.clazz"/>
             </el-form-item>
           </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="专业" prop="major">
               <el-input v-model="form.major"/>
@@ -134,7 +152,7 @@
 </template>
 
 <script setup>
-import {ref, reactive, onMounted} from 'vue'
+import {onMounted, reactive, ref} from 'vue'
 import {ElMessage} from 'element-plus'
 import {useStore} from 'vuex'
 import api from '@/api'
@@ -144,6 +162,7 @@ const formRef = ref(null)
 const passwordFormRef = ref(null)
 const isEditing = ref(false)
 const dialogVisible = ref(false)
+const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
 
 // 表单数据
 const form = reactive({
@@ -154,7 +173,8 @@ const form = reactive({
   phone: '',
   email: '',
   clazz: '',
-  major: ''
+  major: '',
+  avatarUrl: ''
 })
 
 // 密码表单
@@ -295,6 +315,34 @@ const handleChangePassword = async () => {
   })
 }
 
+// 头像上传前的验证
+const beforeAvatarUpload = async (file) => {
+  const isJPG = file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/gif'
+  const isLt2M = file.size / 1024 / 1024 < 2
+
+  if (!isJPG) {
+    ElMessage.error('上传头像图片只能是 JPG/PNG/GIF 格式!')
+    return false
+  }
+  if (!isLt2M) {
+    ElMessage.error('上传头像图片大小不能超过 2MB!')
+    return false
+  }
+
+  try {
+    const response = await api.updateStudentAvatar(form.studentid, file)
+    if (response.data.code === 200) {
+      form.avatarUrl = response.data.data
+      ElMessage.success('头像更新成功')
+      return false // 阻止默认上传
+    }
+  } catch (error) {
+    console.error('上传头像失败:', error)
+    ElMessage.error('上传头像失败')
+  }
+  return false
+}
+
 onMounted(() => {
   fetchStudentInfo()
 })
@@ -326,6 +374,21 @@ onMounted(() => {
 }
 
 :deep(.el-form-item__content) {
+  width: 100%;
+}
+
+.avatar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar-uploader {
+  text-align: center;
+}
+
+:deep(.el-upload) {
   width: 100%;
 }
 </style> 

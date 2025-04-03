@@ -23,4 +23,6 @@ public interface TeacherService {
     void finishClazz(String teacherid, MultipartFile video, String className, String courseName, String startTime, String endTime);
 
     List<?> getVideos(String teacherid);
+
+    String avatarUpload(String teacherid, MultipartFile file) throws MyException;
 }

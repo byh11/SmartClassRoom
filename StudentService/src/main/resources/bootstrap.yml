@@ -1,0 +1,12 @@
+spring:
+  cloud:
+    nacos:
+      config:
+        server-addr: 1.94.170.182:12588
+        prefix: videoservice
+        file-extension: yaml
+        group: DEFAULT_GROUP
+
+
+  profiles:
+    active: dev
