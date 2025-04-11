@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/video")
@@ -178,45 +179,45 @@ public class VideoController {
         }
     }
 
-    @RequestMapping(value = "/{videoid}/like", method = RequestMethod.POST)
+    @RequestMapping(value = "/{userid}/like/{videoid}/{userType}", method = RequestMethod.POST)
     @ResponseBody
-    public Result<?> likeVideo(@PathVariable String videoid) throws MyException {
+    public Result<?> likeVideo(@PathVariable String userid, @PathVariable String videoid, @PathVariable int userType) throws MyException {
         try {
-            videoService.likeVideo(videoid);
-            return Result.success("点赞成功");
+            long l = videoService.likeVideo(userid, videoid, userType);
+            return Result.success("点赞成功", l);
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }
     }
 
-    @RequestMapping(value = "/{videoid}/unlike", method = RequestMethod.POST)
+    @RequestMapping(value = "/{userid}/unlike/{videoid}/{userType}", method = RequestMethod.POST)
     @ResponseBody
-    public Result<?> unlikeVideo(@PathVariable String videoid) throws MyException {
+    public Result<?> unlikeVideo(@PathVariable String userid, @PathVariable String videoid, @PathVariable int userType) throws MyException {
         try {
-            videoService.unlikeVideo(videoid);
-            return Result.success("取消点赞成功");
+            long l = videoService.unlikeVideo(userid, videoid, userType);
+            return Result.success("取消点赞成功", l);
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }
     }
 
-    @RequestMapping(value = "/{studentid}/collections/{videoid}", method = RequestMethod.POST)
+    @RequestMapping(value = "/{userid}/collections/{videoid}/{userType}", method = RequestMethod.POST)
     @ResponseBody
-    public Result<?> collectVideo(@PathVariable String studentid, @PathVariable String videoid) throws MyException {
+    public Result<?> collectVideo(@PathVariable String userid, @PathVariable String videoid, @PathVariable int userType) throws MyException {
         try {
-            videoService.collectVideo(studentid, videoid);
-            return Result.success("收藏成功");
+            long l = videoService.collectVideo(userid, videoid, userType);
+            return Result.success("收藏成功", l);
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }
     }
 
-    @RequestMapping(value = "/{studentid}/uncollections/{videoid}", method = RequestMethod.POST)
+    @RequestMapping(value = "/{userid}/uncollections/{videoid}/{userType}", method = RequestMethod.POST)
     @ResponseBody
-    public Result<?> uncollectVideo(@PathVariable String studentid, @PathVariable String videoid) throws MyException {
+    public Result<?> uncollectVideo(@PathVariable String userid, @PathVariable String videoid, @PathVariable int userType) throws MyException {
         try {
-            videoService.uncollectVideo(studentid, videoid);
-            return Result.success("取消收藏成功");
+            long l = videoService.uncollectVideo(userid, videoid, userType);
+            return Result.success("取消收藏成功", l);
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }
@@ -233,11 +234,11 @@ public class VideoController {
     }
 
 
-    @RequestMapping(value = "/{studentid}/comments/{videoid}", method = RequestMethod.POST)
+    @RequestMapping(value = "/{userid}/comments/{videoid}/{userType}", method = RequestMethod.POST)
     @ResponseBody
-    public Result<?> addComment(@PathVariable String studentid, @PathVariable String videoid, @RequestParam("content") String content) throws MyException {
+    public Result<?> addComment(@PathVariable String userid, @PathVariable String videoid, @RequestParam("content") String content, @PathVariable int userType) throws MyException {
         try {
-            videoService.addComment(studentid, videoid, content);
+            videoService.addComment(userid, videoid, content, userType);
             return Result.success("评论成功");
         } catch (Exception e) {
             return Result.error(e.getMessage());
@@ -250,6 +251,28 @@ public class VideoController {
         try {
             videoService.deleteComment(commentid);
             return Result.success("删除评论成功");
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
+
+    @RequestMapping(value = "/{userid}/reply/{videoid}/{userType}", method = RequestMethod.POST)
+    @ResponseBody
+    public Result<?> addReply(@PathVariable String userid, @PathVariable String videoid, @RequestParam("content") String content, @RequestParam("parentId") String parentId, @PathVariable int userType) throws MyException {
+        try {
+            videoService.addReply(userid, videoid, content, Long.parseLong(parentId), userType);
+            return Result.success("评论成功");
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
+
+    @RequestMapping(value = "/{userid}/status/{videoid}/{userType}", method = RequestMethod.POST)
+    @ResponseBody
+    public Result<?> getVideoStatus(@PathVariable String userid, @PathVariable String videoid, @PathVariable int userType) throws MyException {
+        try {
+            Map<?, ?> videoStatus = videoService.getVideoStatus(userid, videoid, userType);
+            return Result.success("获取成功", videoStatus);
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }

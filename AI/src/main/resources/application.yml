@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: ai-service
+  ai:
+    dashscope:
+      api-key: sk-d8d437adf3e84d479a99a31c081c753b
+      chat:
+        options:
+          model: qwen-max
+  graphql:
+    cors:
+      allowed-origins: "*"
+      allowed-methods: "*"
+      allowed-headers: "*"
+      allow-credentials: true
+
+
+
+
+server:
+  port: 14000
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+      enabled: true
+
+

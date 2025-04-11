@@ -16,8 +16,6 @@ spring:
   cloud:
     nacos:
       server-addr: 1.94.170.182:12588
-      username: nacos
-      password: nacos
   servlet:
     multipart:
       max-file-size: 6GB

@@ -4,11 +4,13 @@
     <div class="main-container">
       <router-view></router-view>
     </div>
+    <AIAssistant/>
   </div>
 </template>
 
 <script setup>
 import Navbar from '@/components/Navbar.vue'
+import AIAssistant from '@/components/AIAssistant.vue'
 </script>
 
 <style>

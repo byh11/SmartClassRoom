@@ -9,13 +9,8 @@
         <option value="$PROJECT_DIR$/StudentService/pom.xml" />
         <option value="$PROJECT_DIR$/TeacherService/pom.xml" />
         <option value="$PROJECT_DIR$/VidoeService/pom.xml" />
+        <option value="$PROJECT_DIR$/AI/pom.xml" />
       </list>
-    </option>
-    <option name="ignoredFiles">
-      <set>
-        <option value="$PROJECT_DIR$/Gatewey/pom.xml" />
-        <option value="$PROJECT_DIR$/Nacos/pom.xml" />
-      </set>
     </option>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">

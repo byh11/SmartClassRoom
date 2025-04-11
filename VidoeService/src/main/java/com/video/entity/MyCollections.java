@@ -1,21 +1,23 @@
 package com.video.entity;
 
+
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @author byh
+ */
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-@TableName("comment")
-public class Comment {
-    @TableId("commentid")
-    private long commentid;
-    private long videoid;
-    private String userid;
-    private String content;
-    private long parentid;
+@NoArgsConstructor
+@TableName("collections")
+public class MyCollections {
+    @TableId("id")
+    private long id;
+    private String userId;
+    private long videoId;
     private int userType;
 }

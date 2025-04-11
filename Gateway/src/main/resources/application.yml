@@ -17,8 +17,6 @@ spring:
   cloud:
     nacos:
       server-addr: 1.94.170.182:12588
-      username: nacos
-      password: nacos
     gateway:
       routes:
         - id: student-service

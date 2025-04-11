@@ -12,6 +12,7 @@
     "dayjs": "^1.11.10",
     "element-plus": "^2.4.3",
     "json-bigint": "^1.0.0",
+    "marked": "^15.0.8",
     "vue": "^3.3.9",
     "vue-router": "^4.2.5",
     "vuex": "^4.1.0"

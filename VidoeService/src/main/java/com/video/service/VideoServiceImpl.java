@@ -15,10 +15,13 @@ import com.tencentcloudapi.common.profile.HttpProfile;
 import com.tencentcloudapi.vod.v20180717.VodClient;
 import com.tencentcloudapi.vod.v20180717.models.DeleteMediaRequest;
 import com.tencentcloudapi.vod.v20180717.models.DeleteMediaResponse;
+import com.video.client.StudentClient;
 import com.video.client.TeacherClient;
 import com.video.config.Yun;
 import com.video.entity.*;
 import com.video.mapper.CommentMapper;
+import com.video.mapper.LikeMapper;
+import com.video.mapper.MyCollectionsMapper;
 import com.video.mapper.VideoMapper;
 import com.video.service.service.VideoService;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +40,9 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -61,7 +66,16 @@ public class VideoServiceImpl implements VideoService {
     private TeacherClient teacherClient;
 
     @Autowired
+    private StudentClient studentClient;
+
+    @Autowired
     private CommentMapper commentMapper;
+
+    @Autowired
+    private MyCollectionsMapper collectionsMapper;
+
+    @Autowired
+    private LikeMapper likeMapper;
 
     private ConcurrentHashMap<String, Process> processMap = new ConcurrentHashMap<>();
 
@@ -270,8 +284,17 @@ public class VideoServiceImpl implements VideoService {
         }
     }
 
+    @NotNull
+    private static QueryWrapper getWrapper(String userid, String videoid, int userType) {
+        QueryWrapper wrapper = new QueryWrapper();
+        wrapper.eq("video_id", videoid);
+        wrapper.eq("user_id", userid);
+        wrapper.eq("user_type", userType);
+        return wrapper;
+    }
+
     @Override
-    public void likeVideo(String videoid) throws MyException {
+    public long likeVideo(String userid, String videoid, int userType) throws MyException {
         String key = "like:" + videoid;
         if (redis.isExist(key)) {
             redis.incr(key);
@@ -279,10 +302,23 @@ public class VideoServiceImpl implements VideoService {
             Video video = videoMapper.selectOne(new QueryWrapper<Video>().eq("videoid", videoid));
             redis.setKey(key, String.valueOf(video.getLikeNum() + 1), 60 * 24);
         }
+
+        QueryWrapper<Like> wrapper = getWrapper(userid, videoid, userType);
+        if (likeMapper.selectOne(wrapper) == null) {
+            Like like = new Like();
+            like.setUserId(userid);
+            like.setVideoId(Long.parseLong(videoid));
+            like.setUserType(userType);
+            likeMapper.insert(like);
+        } else {
+            throw new MyException("您已经点赞过了");
+        }
+
+        return Long.parseLong(redis.getKey(key));
     }
 
     @Override
-    public void unlikeVideo(String videoid) throws MyException {
+    public long unlikeVideo(String userid, String videoid, int userType) throws MyException {
         String key = "like:" + videoid;
         long likeNum;
         if (redis.isExist(key)) {
@@ -296,10 +332,13 @@ public class VideoServiceImpl implements VideoService {
         } else {
             throw new MyException("您已经取消点赞了");
         }
+        QueryWrapper<Like> wrapper = getWrapper(userid, videoid, userType);
+        likeMapper.delete(wrapper);
+        return likeNum;
     }
 
     @Override
-    public void collectVideo(String studentid, String videoid) throws MyException {
+    public long collectVideo(String userid, String videoid, int userType) throws MyException {
         String key = "collect:" + videoid;
         if (redis.isExist(key)) {
             redis.incr(key);
@@ -307,10 +346,21 @@ public class VideoServiceImpl implements VideoService {
             Video video = videoMapper.selectOne(new QueryWrapper<Video>().eq("videoid", videoid));
             redis.setKey(key, String.valueOf(video.getCollectNum() + 1), 60 * 24);
         }
+        QueryWrapper<MyCollections> wrapper = getWrapper(userid, videoid, userType);
+        if (collectionsMapper.selectOne(wrapper) == null) {
+            MyCollections myCollections = new MyCollections();
+            myCollections.setUserId(userid);
+            myCollections.setVideoId(Long.parseLong(videoid));
+            myCollections.setUserType(userType);
+            collectionsMapper.insert(myCollections);
+        } else {
+            throw new MyException("您已经收藏过了");
+        }
+        return Long.parseLong(redis.getKey(key));
     }
 
     @Override
-    public void uncollectVideo(String studentid, String videoid) throws MyException {
+    public long uncollectVideo(String userid, String videoid, int userType) throws MyException {
         String key = "collect:" + videoid;
         long collectNum;
         if (redis.isExist(key)) {
@@ -324,6 +374,9 @@ public class VideoServiceImpl implements VideoService {
         } else {
             throw new MyException("您已经取消收藏了");
         }
+        QueryWrapper<MyCollections> wrapper = getWrapper(userid, videoid, userType);
+        collectionsMapper.delete(wrapper);
+        return collectNum;
     }
 
     @Override
@@ -331,24 +384,32 @@ public class VideoServiceImpl implements VideoService {
         QueryWrapper<Comment> wrapper = new QueryWrapper<>();
         wrapper.eq("videoid", videoid);
         List<Comment> comments = commentMapper.selectList(wrapper);
-        return comments;
+        return commentAfterUpdateList(comments);
+
     }
 
-    private CommentList commentAfterUpdateList(List<Comment> comments) {
-        return null;
+    private List<CommentList> commentAfterUpdateList(List<Comment> comments) {
+        List<CommentList> commentLists = new ArrayList<>();
+        for (Comment comment : comments) {
+            CommentList comment1 = commentAfterUpdate(comment);
+            commentLists.add(comment1);
+        }
+        return commentLists;
     }
 
     private CommentList commentAfterUpdate(Comment comment) {
-        return null;
-    }
-
-    @Override
-    public void addComment(String studentid, String videoid, String content) throws MyException {
-        Comment comment = new Comment();
-        comment.setUserid(studentid);
-        comment.setVideoid(Long.parseLong(videoid));
-        comment.setContent(content);
-        commentMapper.insert(comment);
+        CommentList comment1 = new CommentList();
+        BeanUtils.copyProperties(comment, comment1);
+        if (comment.getUserType() == 1) {
+            Result<Student> studentInfo = studentClient.getStudentInfo(comment1.getUserid());
+            comment1.setAvatar(studentInfo.getData().getAvatar());
+            comment1.setUserName(studentInfo.getData().getName());
+        } else {
+            Result<Teacher> teacherInfo = teacherClient.getTeacherInfo(comment1.getUserid());
+            comment1.setAvatar(teacherInfo.getData().getAvatar());
+            comment1.setUserName(teacherInfo.getData().getName());
+        }
+        return comment1;
     }
 
     @Override
@@ -356,6 +417,47 @@ public class VideoServiceImpl implements VideoService {
         QueryWrapper<Comment> wrapper = new QueryWrapper<>();
         wrapper.eq("commentid", commentid);
         commentMapper.delete(wrapper);
+    }
+
+    @Override
+    public void addComment(String userid, String videoid, String content, int userType) throws MyException {
+        Comment comment = new Comment();
+        comment.setUserid(userid);
+        comment.setVideoid(Long.parseLong(videoid));
+        comment.setContent(content);
+        comment.setUserType(userType);
+        commentMapper.insert(comment);
+    }
+
+    @Override
+    public void addReply(String userid, String videoid, String content, long parentId, int userType) throws MyException {
+        Comment comment = new Comment();
+        comment.setUserid(userid);
+        comment.setVideoid(Long.parseLong(videoid));
+        comment.setContent(content);
+        comment.setUserType(userType);
+        comment.setParentid(parentId);
+        commentMapper.insert(comment);
+    }
+
+    @Override
+    public Map<?, ?> getVideoStatus(String userid, String videoid, int userType) throws MyException {
+        Map<String, Boolean> map = new HashMap<>();
+        QueryWrapper<Like> likeWrapper = getWrapper(userid, videoid, userType);
+        QueryWrapper<MyCollections> collectionsWrapper = getWrapper(userid, videoid, userType);
+        MyCollections collections = collectionsMapper.selectOne(collectionsWrapper);
+        if (collections == null) {
+            map.put("isCollected", false);
+        } else {
+            map.put("isCollected", true);
+        }
+        Like like = likeMapper.selectOne(likeWrapper);
+        if (like == null) {
+            map.put("isLiked", false);
+        } else {
+            map.put("isLiked", true);
+        }
+        return map;
     }
 
     private List<VideoList> selectAfterUpdate(List<Video> data) {

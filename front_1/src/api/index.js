@@ -2,7 +2,7 @@ import axios from 'axios'
 import {handleError, handleResponse} from '@/utils/request'
 import JSONBig from 'json-bigint'
 
-// 创建 axios 实例
+// 创建默认 axios 实例
 const instance = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
     timeout: 5000,
@@ -18,8 +18,30 @@ const instance = axios.create({
     }]
 })
 
+// 创建AI接口专用的axios实例
+const aiInstance = axios.create({
+    baseURL: import.meta.env.VITE_AI_API_BASE_URL,
+    timeout: 150000, // AI接口可能需要更长的超时时间
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    withCredentials: true
+})
+
 // 请求拦截器
 instance.interceptors.request.use(
+    config => {
+        const token = localStorage.getItem('token')
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`
+        }
+        return config
+    },
+    error => Promise.reject(error)
+)
+
+// AI实例的请求拦截器
+aiInstance.interceptors.request.use(
     config => {
         const token = localStorage.getItem('token')
         if (token) {
@@ -142,16 +164,19 @@ const api = {
     getVideoDownloadUrl: (id) => instance.get(`/video/${id}/download`),
 
     // 视频点赞
-    likeVideo: (videoid) => instance.post(`/video/${videoid}/like`),
+    likeVideo: (userid, videoid, userType) => instance.post(`/video/${userid}/like/${videoid}/${userType}`),
 
     // 取消点赞
-    unlikeVideo: (videoid) => instance.post(`/video/${videoid}/unlike`),
+    unlikeVideo: (userid, videoid, userType) => instance.post(`/video/${userid}/unlike/${videoid}/${userType}`),
 
     // 收藏视频
-    collectVideo: (studentid, videoid) => instance.post(`/video/${studentid}/collections/${videoid}`),
+    collectVideo: (userid, videoid, userType) => instance.post(`/video/${userid}/collections/${videoid}/${userType}`),
 
     // 取消收藏
-    uncollectVideo: (studentid, videoid) => instance.post(`/video/${studentid}/uncollections/${videoid}`),
+    uncollectVideo: (userid, videoid, userType) => instance.post(`/video/${userid}/uncollections/${videoid}/${userType}`),
+
+    // 获取视频点赞和收藏状态
+    getVideoStatus: (userid, videoid, userType) => instance.post(`/video/${userid}/status/${videoid}/${userType}`),
 
     // =============== 评论相关 ===============
 
@@ -159,11 +184,23 @@ const api = {
     getComments: (videoid) => instance.get(`/video/${videoid}/comments`),
 
     // 学生发表评论
-    addComment: (studentid, videoid, data) => instance.post(`/video/${studentid}/comments/${videoid}`, data, {
+    addComment: (studentid, videoid, data, userType) => instance.post(`/video/${studentid}/comments/${videoid}/${userType}`, data, {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
         }
     }),
+
+    // 评论回复相关接口
+    addReply: (userId, videoid, parentId, content, userType) => instance.post(`/video/${userId}/reply/${videoid}/${userType}`, {
+        content,
+        parentId
+    }, {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    }),
+
+    getReplies: (commentId) => instance.get(`/video/comments/${commentId}/replies`),
 
     // 学生删除评论
     deleteComment: (commentid) => instance.post(`/video/comments/del/${commentid}`),
@@ -268,7 +305,21 @@ const api = {
                 'Content-Type': 'multipart/form-data'
             }
         })
-    }
+    },
+
+    // AI聊天接口
+    chatWithAI: (message, user) => aiInstance.get('/chat', {
+        params: {
+            input: message,
+            user: user
+        },
+        responseType: 'text',
+        headers: {
+            'Accept': 'text/event-stream',
+            'Cache-Control': 'no-cache'
+        },
+        withCredentials: true
+    }),
 }
 
 export default api 

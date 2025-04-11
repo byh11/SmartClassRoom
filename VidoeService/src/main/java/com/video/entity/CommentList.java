@@ -13,4 +13,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CommentList extends Comment {
     private String avatar;
+    private String userName;
 }
