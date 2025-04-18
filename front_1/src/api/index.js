@@ -143,6 +143,15 @@ const api = {
     // 获取视频列表
     getVideoList: (params) => instance.get('/video/SelectVideoAll', {params}),
 
+    // 根据分类获取视频
+    getVideoByType: (params) => instance.get('/video/getVideoByType', {params}),
+
+    // 根据字段排序获取视频
+    getVideoTopByField: (params) => instance.get('/video/getVideoTopByField', {params}),
+
+    // 根据名称搜索视频
+    getVideoByName: (params) => instance.get('/video/getVideoByName', {params}),
+
     // 获取视频详情
     getVideoDetail: (id) => instance.get(`/video/${id}`),
 
@@ -282,6 +291,12 @@ const api = {
 
     // 获取学生收藏列表
     getStudentCollections: (studentid, params) => instance.get(`/student/${studentid}/collections`, {params}),
+
+    // 获取学生喜欢的视频列表
+    getLikedVideos: (userid, userType) => instance.get(`/video/liked`, {params: {userid, userType}}),
+
+    // 获取学生收藏的视频列表
+    getCollectedVideos: (userid, userType) => instance.get(`/video/collected`, {params: {userid, userType}}),
 
     // 添加播放记录
     addPlayRecord: (videoid) => instance.post(`/video/play/${videoid}`, null),

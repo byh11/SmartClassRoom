@@ -1,5 +1,6 @@
 package com.video.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -44,6 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Service
 @RefreshScope
@@ -458,6 +460,81 @@ public class VideoServiceImpl implements VideoService {
             map.put("isLiked", true);
         }
         return map;
+    }
+
+    @Override
+    public List<?> getVideoTopByField(int pageNumber, int pageSize, String field, String order) throws MyException {
+        IPage<Video> page = new Page<>(pageNumber, pageSize);
+        QueryWrapper<Video> queryWrapper = new QueryWrapper<>();
+        if (order.equals("asc")) {
+            queryWrapper.orderByAsc(field);
+        } else {
+            queryWrapper.orderByDesc(field);
+        }
+        IPage<Video> userPage = videoMapper.selectPage(page, queryWrapper);
+        ArrayList<Video> videos = (ArrayList<Video>) userPage.getRecords(); // 获取当前页数据
+        if (videos != null) {
+            return selectAfterUpdate(videos);
+        }
+        throw new MyException("查询失败");
+    }
+
+    @Override
+    public List<?> getVideoByName(int pageNumber, int pageSize, String name) throws MyException {
+        IPage<Video> page = new Page<>(pageNumber, pageSize);
+        QueryWrapper<Video> queryWrapper = new QueryWrapper<>();
+        queryWrapper.like("video_name", name).or().like("video_text", name);
+        IPage<Video> userPage = videoMapper.selectPage(page, queryWrapper);
+        ArrayList<Video> videos = (ArrayList<Video>) userPage.getRecords(); // 获取当前页数据
+        if (videos != null) {
+            return selectAfterUpdate(videos);
+        }
+        throw new MyException("查询失败");
+    }
+
+    @Override
+    public List<?> getVideoByType(int pageNumber, int pageSize, String type) throws MyException {
+        IPage<Video> page = new Page<>(pageNumber, pageSize);
+        QueryWrapper<Video> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("video_type", type);
+        IPage<Video> userPage = videoMapper.selectPage(page, queryWrapper);
+        ArrayList<Video> videos = (ArrayList<Video>) userPage.getRecords(); // 获取当前页数据
+        if (videos != null) {
+            return selectAfterUpdate(videos);
+        }
+        throw new MyException("查询失败");
+    }
+
+    @Override
+    public List<?> getLiked(String userid, int userType) throws MyException {
+        LambdaQueryWrapper<Like> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Like::getUserType, userType).eq(Like::getUserId, userid);
+        List<Like> lists = likeMapper.selectList(wrapper);
+        //使用流收集所有视频id
+        List<Long> videoIds = lists.stream().map(Like::getVideoId).collect(Collectors.toList());
+        if (videoIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        QueryWrapper videoWapper = new QueryWrapper();
+        videoWapper.in("videoid", videoIds);
+        List<Video> videos = videoMapper.selectList(videoWapper);
+        return selectAfterUpdate(videos);
+    }
+
+    @Override
+    public List<?> getCollected(String userid, int userType) throws MyException {
+        LambdaQueryWrapper<MyCollections> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MyCollections::getUserType, userType).eq(MyCollections::getUserId, userid);
+        List<MyCollections> lists = collectionsMapper.selectList(wrapper);
+        //使用流收集所有视频id
+        List<Long> videoIds = lists.stream().map(MyCollections::getVideoId).collect(Collectors.toList());
+        if (videoIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        QueryWrapper videoWapper = new QueryWrapper();
+        videoWapper.in("videoid", videoIds);
+        List<Video> videos = videoMapper.selectList(videoWapper);
+        return selectAfterUpdate(videos);
     }
 
     private List<VideoList> selectAfterUpdate(List<Video> data) {

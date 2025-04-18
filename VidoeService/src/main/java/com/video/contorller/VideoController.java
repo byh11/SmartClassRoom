@@ -278,5 +278,71 @@ public class VideoController {
         }
     }
 
+    @RequestMapping(value = "/getVideoTopByField", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<List> getVideoTopByField(@RequestParam("pageNumber") int pageNumber, @RequestParam("pageSize") int pageSize, @RequestParam("field") String field, @RequestParam("order") String order) {
+        List<?> videos = null;
+        try {
+            videos = videoService.getVideoTopByField(pageNumber, pageSize, field, order);
+        } catch (MyException e) {
+            log.info(e.getMessage());
+            return Result.error(e.getMessage());
+        }
+        return Result.success("查询成功", videos);
+    }
+
+    @RequestMapping(value = "/getVideoByName", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<List> getVideoByName(@RequestParam("pageNumber") int pageNumber, @RequestParam("pageSize") int pageSize, @RequestParam("name") String name) {
+        List<?> videos = null;
+        try {
+            videos = videoService.getVideoByName(pageNumber, pageSize, name);
+        } catch (MyException e) {
+            log.info(e.getMessage());
+            return Result.error(e.getMessage());
+        }
+        return Result.success("查询成功", videos);
+    }
+
+    @RequestMapping(value = "/getVideoByType", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<List> getVideoByType(@RequestParam("pageNumber") int pageNumber, @RequestParam("pageSize") int pageSize, @RequestParam("type") String type) {
+        List<?> videos = null;
+        try {
+            videos = videoService.getVideoByType(pageNumber, pageSize, type);
+        } catch (MyException e) {
+            log.info(e.getMessage());
+            return Result.error(e.getMessage());
+        }
+        return Result.success("查询成功", videos);
+    }
+
+    @RequestMapping(value = "/liked", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<List> getLiked(@RequestParam String userid, @RequestParam int userType) {
+        List<?> videos = null;
+        try {
+            videos = videoService.getLiked(userid, userType);
+        } catch (MyException e) {
+            log.info(e.getMessage());
+            return Result.error(e.getMessage());
+        }
+        return Result.success("查询成功", videos);
+    }
+
+    @RequestMapping(value = "/collected", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<List> getCollected(@RequestParam String userid, @RequestParam int userType) {
+        List<?> videos = null;
+        try {
+            videos = videoService.getCollected(userid, userType);
+        } catch (MyException e) {
+            log.info(e.getMessage());
+            return Result.error(e.getMessage());
+        }
+        return Result.success("查询成功", videos);
+    }
+
+
 
 }

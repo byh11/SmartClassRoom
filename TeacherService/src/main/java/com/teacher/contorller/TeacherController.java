@@ -87,9 +87,20 @@ public class TeacherController {
         }
     }
 
+    @GetMapping("/infoByName")
+    @ResponseBody
+    public Result<?> getTeacherInfoByName(@RequestParam("teacherName") String name) {
+        try {
+            Teacher result = teacherService.getTeacherInfoByName(name);
+            return Result.success(result);
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
+
     @PostMapping("/{teacherid}/info")
     @ResponseBody
-    public Result<?> postStudentInfo(@PathVariable String teacherid, @RequestBody Teacher requestBody) {
+    public Result<?> postTeacherInfo(@PathVariable String teacherid, @RequestBody Teacher requestBody) {
         try {
             Teacher result = teacherService.updateTeacherInfo(teacherid, requestBody);
             return Result.success(result);

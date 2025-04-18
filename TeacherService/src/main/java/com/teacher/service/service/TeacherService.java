@@ -16,6 +16,8 @@ public interface TeacherService {
 
     Teacher getTeacherInfo(String teacherid) throws MyException;
 
+    Teacher getTeacherInfoByName(String name) throws MyException;
+
     Teacher updateTeacherInfo(String teacherid, Teacher teacher) throws MyException;
 
     void attendClazz(String teacherid, String clazzname);

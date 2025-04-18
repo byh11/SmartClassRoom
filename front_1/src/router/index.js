@@ -60,6 +60,18 @@ const routes = [
         name: 'VideoList',
         component: () => import('@/views/VideoList.vue')
     },
+    {
+        path: '/liked-videos',
+        name: 'LikedVideos',
+        component: () => import('@/views/LikedVideos.vue'),
+        meta: {requiresAuth: true}
+    },
+    {
+        path: '/collected-videos',
+        name: 'CollectedVideos',
+        component: () => import('@/views/CollectedVideos.vue'),
+        meta: {requiresAuth: true}
+    },
     // 404 页面
     {
         path: '/:pathMatch(.*)*',

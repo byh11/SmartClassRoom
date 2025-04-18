@@ -8,7 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
-@FeignClient(name = "teacher-service", url = "http://10.0.220.99:12000")
+@FeignClient(name = "teacher-service")
 public interface TeacherClient {
 
     // 测试接口
@@ -36,6 +36,9 @@ public interface TeacherClient {
     // 获取教师信息
     @GetMapping("/teacher/{teacherid}/info")
     Result<?> getTeacherInfo(@PathVariable("teacherid") String teacherid);
+
+    @GetMapping("/teacher/infoByName")
+    Result<?> getTeacherInfoByName(@RequestParam("teacherName") String teacherName);
 
     // 更新教师信息
     @PostMapping("/teacher/{teacherid}/info")

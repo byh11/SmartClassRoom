@@ -51,4 +51,14 @@ public interface VideoService {
 
     Map<?, ?> getVideoStatus(String userid, String videoid, int userType) throws MyException;
 
+    List<?> getVideoTopByField(int pageNumber, int pageSize, String field, String order) throws MyException;
+
+    List<?> getVideoByName(int pageNumber, int pageSize, String name) throws MyException;
+
+    List<?> getVideoByType(int pageNumber, int pageSize, String type) throws MyException;
+
+    List<?> getLiked(String userid, int userType) throws MyException;
+
+    List<?> getCollected(String userid, int userType) throws MyException;
+
 }

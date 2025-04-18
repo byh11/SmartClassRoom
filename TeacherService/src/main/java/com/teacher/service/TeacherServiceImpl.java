@@ -186,6 +186,21 @@ public class TeacherServiceImpl implements TeacherService {
     }
 
     @Override
+    public Teacher getTeacherInfoByName(String name) throws MyException {
+        if (redis.isExist("teacherName:" + name)) {
+            return gson.fromJson(redis.getKey("teacherName:" + name), Teacher.class);
+        }
+        LambdaUpdateWrapper<Teacher> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Teacher::getName, name);
+        Teacher teacher = teacherMapper.selectOne(updateWrapper);
+        if (teacher != null) {
+            redis.setKey("teacherName:" + name, gson.toJson(teacher));
+            return teacher;
+        }
+        return null;
+    }
+
+    @Override
     public Teacher updateTeacherInfo(String teacherid, Teacher teacher) throws MyException {
         LambdaUpdateWrapper<Teacher> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Teacher::getTeacherid, teacherid);

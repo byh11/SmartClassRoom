@@ -31,9 +31,9 @@
         </el-col>
         <el-col :span="6">
           <el-select v-model="filters.sort" placeholder="排序方式">
-            <el-option label="最新发布" value="latest"/>
             <el-option label="最多播放" value="views"/>
-            <el-option label="最多点赞" value="likes"/>
+            <el-option label="最多点赞" value="like_num"/>
+            <el-option label="最多收藏" value="collect_num"/>
           </el-select>
         </el-col>
       </el-row>
@@ -75,7 +75,7 @@
 </template>
 
 <script setup>
-import {onMounted, reactive, ref} from 'vue'
+import {onMounted, reactive, ref, watch} from 'vue'
 import {useRouter} from 'vue-router'
 import {useStore} from 'vuex'
 import {ElMessage} from 'element-plus'
@@ -94,7 +94,8 @@ const pageSize = 12
 
 const filters = reactive({
   category: '',
-  sort: 'latest'
+  sort: 'views',
+  order: 'desc'
 })
 
 const categories = [
@@ -110,24 +111,46 @@ const fetchVideos = async () => {
   try {
     const params = {
       pageNumber: page.value,
-      pageSize: pageSize,
-      videoidName: searchQuery.value,
-      type: filters.category,
-      orderBy: filters.sort
+      pageSize: pageSize
     }
-    const res = await api.getVideoList(params)
+
+    let res
+    if (searchQuery.value) {
+      // 搜索视频
+      res = await api.getVideoByName({
+        ...params,
+        name: searchQuery.value
+      })
+    } else if (filters.category) {
+      // 按分类获取视频
+      res = await api.getVideoByType({
+        ...params,
+        type: filters.category
+      })
+    } else if (filters.sort) {
+      // 按字段排序获取视频
+      res = await api.getVideoTopByField({
+        ...params,
+        field: filters.sort,
+        order: filters.order
+      })
+    } else {
+      // 获取所有视频
+      res = await api.getVideoList(params)
+    }
+
     if (res.data.code === 200) {
       // 转换数据格式以适配 VideoCard 组件
       const formattedVideos = res.data.data.map(video => ({
         videoid: video.videoid,
         videoidName: video.videoName,
-        coverUrl: video.coverUrl, // 这里可能需要从视频URL生成封面图
+        coverUrl: video.coverUrl,
         duration: video.duration,
-        views: parseInt(video.views), // 后端没有提供播放次数，暂时设为0
+        views: parseInt(video.views),
         likeNum: parseInt(video.likeNum),
         collectNum: parseInt(video.collectNum),
-        teacherName: video.teacherName, // 这里可能需要根据teacherid获取教师信息
-        teacherAvatar: video.teacherAvatar, // 这里可能需要根据teacherid获取教师头像
+        teacherName: video.teacherName,
+        teacherAvatar: video.teacherAvatar,
         description: video.videoText,
         videoType: video.videoType,
         className: video.className,
@@ -189,6 +212,12 @@ const handlePlay = async (video) => {
     ElMessage.error('播放失败，请重试')
   }
 }
+
+// 监听筛选条件变化
+watch([() => filters.category, () => filters.sort], () => {
+  page.value = 1
+  fetchVideos()
+})
 
 onMounted(() => {
   fetchVideos()

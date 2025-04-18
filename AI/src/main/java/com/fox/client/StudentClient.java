@@ -8,7 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
-@FeignClient(name = "student-service", url = "http://10.0.220.99:12000")
+@FeignClient(name = "student-service")
 public interface StudentClient {
 
     @GetMapping("/student/test")

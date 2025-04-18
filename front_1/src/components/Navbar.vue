@@ -19,6 +19,21 @@
       视频列表
     </el-menu-item>
 
+    <template v-if="isLoggedIn">
+      <el-menu-item index="/liked-videos">
+        <el-icon>
+          <Star/>
+        </el-icon>
+        我的喜欢
+      </el-menu-item>
+      <el-menu-item index="/collected-videos">
+        <el-icon>
+          <Collection/>
+        </el-icon>
+        我的收藏
+      </el-menu-item>
+    </template>
+
     <template v-if="isTeacher">
       <el-menu-item index="/teacher/videos">
         <el-icon>
@@ -72,8 +87,20 @@
 <script setup>
 import {computed} from 'vue'
 import {useStore} from 'vuex'
-import {useRouter, useRoute} from 'vue-router'
+import {useRoute, useRouter} from 'vue-router'
 import {ElMessage} from 'element-plus'
+import {
+  Calendar,
+  Collection,
+  Edit,
+  Film,
+  HomeFilled,
+  Key,
+  Star,
+  SwitchButton,
+  User,
+  VideoCamera
+} from '@element-plus/icons-vue'
 
 const store = useStore()
 const router = useRouter()

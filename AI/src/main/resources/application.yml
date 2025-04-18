@@ -1,21 +1,43 @@
 spring:
   application:
     name: ai-service
-  ai:
-    dashscope:
-      api-key: sk-d8d437adf3e84d479a99a31c081c753b
-      chat:
-        options:
-          model: qwen-max
   graphql:
     cors:
       allowed-origins: "*"
       allowed-methods: "*"
       allowed-headers: "*"
       allow-credentials: true
+  cloud:
+    nacos:
+      config:
+        group: DEFAULT_GROUP
+        server-addr: 1.94.170.182:12588
+      discovery:
+        ip-type: IPv4
+        server-addr: 1.94.170.182:12588
+    loadbalancer:
+      ribbon:
+        enabled: true # 若使用 Ribbon
 
+  config:
+    import:
+      - optional:nacos:aliyun.yaml # 监听 DEFAULT_GROUP:test.yml
+#      - optional:nacos:test01.yml?group=group_01 # 覆盖默认 group，监听 group_01:test01.yml
+#      - optional:nacos:test02.yml?group=group_02&refreshEnabled=false # 不开启动态刷新
+#      - nacos:test03.yml # 在拉取nacos配置异常时会快速失败，会导致 spring 容器启动失败
 
-
+langchain4j:
+  community:
+    dashscope:
+      chat-model:
+        #        model-name: qwen-max
+        model-name: qwen-max-0107
+      streaming-chat-model:
+        #        model-name: qwen-max
+        model-name: qwen-max-0107
+# langchain4j.community.dashscope.chat-model.api-key
+# langchain4j.community.dashscope.streaming-chat-model.api-key
+# langchain4j.community.dashscope.embedding-model.api-key
 
 server:
   port: 14000

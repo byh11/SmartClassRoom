@@ -8,7 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@FeignClient(name = "video-service", url = "http://10.0.220.99:12000") // 根据实际服务地址调整
+@FeignClient(name = "video-service") // 根据实际服务地址调整
 public interface VideoClient {
 
     // 测试接口
@@ -134,4 +134,27 @@ public interface VideoClient {
             @RequestParam("parentId") String parentId,
             @PathVariable("userType") int userType
     );
+
+    @GetMapping("/video/getVideoTopByField")
+    Result<List<?>> getVideoTopByField(
+            @RequestParam("pageNumber") int pageNumber,
+            @RequestParam("pageSize") int pageSize,
+            @RequestParam("field") String field,
+            @RequestParam("order") String order
+    );
+
+    @GetMapping("/video/getVideoByName")
+    Result<List<?>> getVideoByName(
+            @RequestParam("pageNumber") int pageNumber,
+            @RequestParam("pageSize") int pageSize,
+            @RequestParam("name") String name
+    );
+
+    @GetMapping("/video/getVideoByType")
+    Result<List<?>> getVideoByType(
+            @RequestParam("pageNumber") int pageNumber,
+            @RequestParam("pageSize") int pageSize,
+            @RequestParam("type") String type
+    );
+
 }
