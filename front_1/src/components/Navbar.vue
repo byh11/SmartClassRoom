@@ -5,47 +5,12 @@
       mode="horizontal"
       router
   >
-    <el-menu-item index="/">
-      <el-icon>
-        <HomeFilled/>
-      </el-icon>
-      首页
-    </el-menu-item>
-
-    <el-menu-item index="/video">
-      <el-icon>
-        <VideoCamera/>
-      </el-icon>
-      视频列表
-    </el-menu-item>
-
-    <template v-if="isLoggedIn">
-      <el-menu-item index="/liked-videos">
+    <template v-for="item in menuItems" :key="item.path">
+      <el-menu-item :index="item.path">
         <el-icon>
-          <Star/>
+          <component :is="item.icon"/>
         </el-icon>
-        我的喜欢
-      </el-menu-item>
-      <el-menu-item index="/collected-videos">
-        <el-icon>
-          <Collection/>
-        </el-icon>
-        我的收藏
-      </el-menu-item>
-    </template>
-
-    <template v-if="isTeacher">
-      <el-menu-item index="/teacher/videos">
-        <el-icon>
-          <Film/>
-        </el-icon>
-        视频管理
-      </el-menu-item>
-      <el-menu-item index="/teacher/class">
-        <el-icon>
-          <Calendar/>
-        </el-icon>
-        上课管理
+        {{ item.text }}
       </el-menu-item>
     </template>
 
@@ -89,18 +54,7 @@ import {computed} from 'vue'
 import {useStore} from 'vuex'
 import {useRoute, useRouter} from 'vue-router'
 import {ElMessage} from 'element-plus'
-import {
-  Calendar,
-  Collection,
-  Edit,
-  Film,
-  HomeFilled,
-  Key,
-  Star,
-  SwitchButton,
-  User,
-  VideoCamera
-} from '@element-plus/icons-vue'
+import {Edit, Key, SwitchButton, User} from '@element-plus/icons-vue'
 
 const store = useStore()
 const router = useRouter()
@@ -111,16 +65,24 @@ const isTeacher = computed(() => store.state.user.role === 'teacher')
 const activeRoute = computed(() => route.path)
 const userRole = computed(() => store.state.user.role)
 
-// 根据用户角色计算个人中心路径
-const profilePath = computed(() => {
-  return isTeacher.value ? '/profile/teacher' : '/profile/student'
-})
-
 const handleLogout = async () => {
   await store.dispatch('logout')
   ElMessage.success('退出成功')
   router.push('/login')
 }
+
+const menuItems = computed(() => {
+  const items = [
+    {icon: 'HomeFilled', text: '首页', path: '/'},
+    {icon: 'VideoCamera', text: '视频', path: '/video'},
+    {icon: 'Collection', text: '收藏', path: '/collected-videos'},
+    {icon: 'Star', text: '喜欢', path: '/liked-videos'},
+    {icon: 'DataLine', text: '学习统计', path: '/learning/stats'},
+    {icon: 'Document', text: '学习报告', path: '/learning/report'}
+  ]
+
+  return items
+})
 </script>
 
 <style scoped>

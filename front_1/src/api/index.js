@@ -301,6 +301,26 @@ const api = {
     // 添加播放记录
     addPlayRecord: (videoid) => instance.post(`/video/play/${videoid}`, null),
 
+    // 学习进度相关接口
+    updateLearningProgress: (data) => instance.post('/learning/progress', data),
+
+    getVideoProgress: (videoId, studentId) => instance.get(`/learning/progress/${videoId}`, {
+        params: {studentId}
+    }),
+
+    // 学习统计相关接口
+    getLearningStats: (studentId, startDate, endDate) => instance.get('/learning/stats', {
+        params: {studentId, startDate, endDate}
+    }),
+
+    // 学习报告相关接口
+    generateLearningReport: (studentId, reportType) => instance.post('/learning/report', null, {
+        params: {studentId, reportType}
+    }),
+    getLearningReports: (studentId, reportType, startDate, endDate) => instance.get('/learning/reports', {
+        params: {studentId, reportType, startDate, endDate}
+    }),
+
     // 头像相关接口
     updateStudentAvatar: (studentid, file) => {
         const formData = new FormData()

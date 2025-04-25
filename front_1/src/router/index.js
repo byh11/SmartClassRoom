@@ -61,6 +61,18 @@ const routes = [
         component: () => import('@/views/VideoList.vue')
     },
     {
+        path: '/learning/stats',
+        name: 'LearningStats',
+        component: () => import('@/views/LearningStats.vue'),
+        meta: {requiresAuth: true, role: 'student'}
+    },
+    {
+        path: '/learning/report',
+        name: 'LearningReport',
+        component: () => import('@/views/LearningReport.vue'),
+        meta: {requiresAuth: true, role: 'student'}
+    },
+    {
         path: '/liked-videos',
         name: 'LikedVideos',
         component: () => import('@/views/LikedVideos.vue'),

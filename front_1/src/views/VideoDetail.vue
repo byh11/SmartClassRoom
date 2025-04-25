@@ -26,9 +26,11 @@
               @loadedmetadata="handleVideoLoaded"
               @pause="handlePause"
               @play="handlePlay"
+              @ended="handleEnded"
           >
             您的浏览器不支持视频播放
           </video>
+          <VideoProgress :video-id="videoInfo.videoid"/>
         </div>
 
         <!-- 视频信息 -->
@@ -222,6 +224,7 @@ import {ElMessage, ElMessageBox} from 'element-plus'
 import {ChatDotRound, Collection, Loading, Star, View, Warning} from '@element-plus/icons-vue'
 import {formatNumber} from '@/utils/format'
 import api from '@/api'
+import VideoProgress from '@/components/VideoProgress.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -232,6 +235,7 @@ const videoPlayer = ref(null)
 const isCollected = ref(false)
 const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
 const defaultCover = 'https://via.placeholder.com/300x200'
+const progressTimer = ref(null)
 
 // 评论相关
 const newComment = ref('')
@@ -264,6 +268,44 @@ const videoInfo = ref({
 const formatDate = (date) => {
   if (!date) return ''
   return new Date(date).toLocaleDateString()
+}
+
+// 更新学习进度
+const updateProgress = async () => {
+  try {
+    if (!store.state.user.isLoggedIn || !videoPlayer.value) return
+
+    const currentTime = videoPlayer.value.currentTime
+    const duration = videoPlayer.value.duration
+    const progress = (currentTime / duration) * 100
+
+    await api.updateLearningProgress({
+      videoId: videoInfo.value.videoid,
+      studentId: store.state.user.studentid,
+      progress: progress,
+      lastPosition: currentTime
+    })
+  } catch (error) {
+    console.error('更新学习进度失败:', error)
+  }
+}
+
+// 开始定时保存进度
+const startProgressTimer = () => {
+  // 清除可能存在的旧定时器
+  if (progressTimer.value) {
+    clearInterval(progressTimer.value)
+  }
+  // 每5秒保存一次进度
+  progressTimer.value = setInterval(updateProgress, 5000)
+}
+
+// 停止定时保存进度
+const stopProgressTimer = () => {
+  if (progressTimer.value) {
+    clearInterval(progressTimer.value)
+    progressTimer.value = null
+  }
 }
 
 // 处理视频加载完成
@@ -299,14 +341,40 @@ const handlePlay = async () => {
       userType = 0 // 教师
     }
     await api.addPlayRecord(String(videoInfo.value.videoid))
+    // 开始定时保存进度
+    startProgressTimer()
   } catch (error) {
     console.error('记录播放失败:', error)
   }
 }
 
 // 处理视频暂停
-const handlePause = () => {
+const handlePause = async () => {
   console.log('视频暂停')
+  // 更新学习进度
+  await updateProgress()
+  // 停止定时保存
+  stopProgressTimer()
+}
+
+// 处理视频播放结束
+const handleEnded = async () => {
+  console.log('视频播放结束')
+  // 更新学习进度为100%
+  try {
+    if (!store.state.user.isLoggedIn) return
+
+    await api.updateLearningProgress({
+      videoId: videoInfo.value.videoid,
+      studentId: store.state.user.studentid,
+      progress: 100,
+      lastPosition: videoPlayer.value.duration
+    })
+    // 停止定时保存
+    stopProgressTimer()
+  } catch (error) {
+    console.error('更新学习进度失败:', error)
+  }
 }
 
 // 获取视频详情
@@ -682,6 +750,8 @@ onUnmounted(() => {
   if (videoPlayer.value) {
     videoPlayer.value.pause()
   }
+  // 组件卸载时清除定时器
+  stopProgressTimer()
 })
 </script>
 
