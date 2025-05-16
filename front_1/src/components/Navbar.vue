@@ -72,16 +72,26 @@ const handleLogout = async () => {
 }
 
 const menuItems = computed(() => {
-  const items = [
+  const commonItems = [
     {icon: 'HomeFilled', text: '首页', path: '/'},
     {icon: 'VideoCamera', text: '视频', path: '/video'},
     {icon: 'Collection', text: '收藏', path: '/collected-videos'},
     {icon: 'Star', text: '喜欢', path: '/liked-videos'},
+  ]
+
+  const studentItems = [
+    ...commonItems,
     {icon: 'DataLine', text: '学习统计', path: '/learning/stats'},
     {icon: 'Document', text: '学习报告', path: '/learning/report'}
   ]
 
-  return items
+  const teacherItems = [
+    ...commonItems,
+    {icon: 'VideoCamera', text: '视频管理', path: '/teacher/videos'},
+    {icon: 'Calendar', text: '上课管理', path: '/teacher/class'}
+  ]
+
+  return isTeacher.value ? teacherItems : studentItems
 })
 </script>
 

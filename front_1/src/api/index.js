@@ -4,8 +4,9 @@ import JSONBig from 'json-bigint'
 
 // 创建默认 axios 实例
 const instance = axios.create({
+
     baseURL: import.meta.env.VITE_API_BASE_URL,
-    timeout: 5000,
+    timeout: 30000,
     headers: {
         'Content-Type': 'application/json'
     },

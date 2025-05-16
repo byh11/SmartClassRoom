@@ -96,10 +96,10 @@ public class LearningStatsServiceImpl extends ServiceImpl<LearningStatsMapper, L
         return stats;
     }
 
-    public LearningStats aggregateStats(List<LearningStats> statsList) {
+    public LearningStats aggregateStats(List<LearningStats> statsList, String studentId) {
         LearningStats weeklyStats = new LearningStats();
-        weeklyStats.setStudentId(statsList.get(0).getStudentId());
-        weeklyStats.setLastStudyDate(statsList.get(statsList.size() - 1).getLastStudyDate());
+        weeklyStats.setStudentId(studentId);
+        weeklyStats.setLastStudyDate(!statsList.isEmpty() ? statsList.get(statsList.size() - 1).getLastStudyDate() : LocalDateTime.now());
 
         int totalWatchTime = 0;
         int completedVideos = 0;

@@ -83,8 +83,8 @@ public class LearningReportServiceImpl extends ServiceImpl<LearningReportMapper,
         report.setStudentId(studentId);
         report.setReportType(1); // 日报
         report.setReportDate(yesterday);
-        report.setWatchTime(stats.getTotalWatchTime());
-        report.setCompletedVideos(stats.getCompletedVideos());
+        report.setWatchTime(stats != null ? stats.getTotalWatchTime() : 0);
+        report.setCompletedVideos(stats != null ? stats.getCompletedVideos() : 0);
         report.setSuggestions(suggestions);
 
         learningReportService.insert(report);
@@ -108,7 +108,7 @@ public class LearningReportServiceImpl extends ServiceImpl<LearningReportMapper,
         List<LearningStats> weeklyStatsList = learningStatsService.getStatsByDateRange(studentId, weekStart, weekEnd);
 
         // 汇总周统计数据
-        LearningStats weeklyStats = learningStatsService.aggregateStats(weeklyStatsList);
+        LearningStats weeklyStats = learningStatsService.aggregateStats(weeklyStatsList, studentId);
 
         // 生成周报的学习建议
         String suggestions = generateWeeklySuggestions(weeklyStats, weeklyStatsList);
@@ -138,12 +138,12 @@ public class LearningReportServiceImpl extends ServiceImpl<LearningReportMapper,
     private void saveMonthlyReport(String studentId) {
         // 获取上月的日期范围
         LocalDate monthEnd = LocalDate.now();
-        LocalDate monthStart = monthEnd.withDayOfMonth(1);
+        LocalDate monthStart = monthEnd.minusDays(30);
         // 获取上月的学习统计数据
         List<LearningStats> monthlyStatsList = learningStatsService.getStatsByDateRange(studentId, monthStart, monthEnd);
 
         // 汇总月统计数据
-        LearningStats monthlyStats = learningStatsService.aggregateStats(monthlyStatsList);
+        LearningStats monthlyStats = learningStatsService.aggregateStats(monthlyStatsList, studentId);
 
         // 生成月报的学习建议
         String suggestions = generateMonthlySuggestions(monthlyStats, monthlyStatsList);
@@ -278,6 +278,9 @@ public class LearningReportServiceImpl extends ServiceImpl<LearningReportMapper,
     }
 
     private String generateSuggestions(LearningStats stats) {
+        if (stats == null) {
+            return "昨日未进行学习";
+        }
         StringBuilder suggestions = new StringBuilder();
 
         // 根据观看时长给出建议
